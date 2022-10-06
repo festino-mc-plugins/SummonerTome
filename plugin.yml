@@ -1,0 +1,13 @@
+name: SummonerTome
+version: 1.0.0
+authors: [FEST_Channel]
+
+description: Portable vehicles.
+
+main: com.festp.Main
+
+commands:
+         sumtome:
+           description: Get tome item.
+           default: op
+api-version: 1.14
