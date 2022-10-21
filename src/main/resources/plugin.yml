@@ -8,6 +8,6 @@ main: com.festp.Main
 
 commands:
          sumtome:
-           description: Get tome item.
+           description: Get tome items.
            default: op
 api-version: 1.14

@@ -1,6 +1,9 @@
-package com.festp.tome;
+package com.festp.components;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.AbstractHorse;
 import org.bukkit.entity.ChestedHorse;
@@ -10,8 +13,10 @@ import org.bukkit.entity.Horse.Style;
 import org.bukkit.inventory.AbstractHorseInventory;
 import org.bukkit.inventory.ItemStack;
 
-import com.festp.tome.SummonUtils.HorseSetter;
+import com.festp.inventory.TomeFileManager;
+import com.festp.utils.SummonUtils;
 import com.festp.utils.Utils;
+import com.festp.utils.SummonUtils.HorseSetter;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
@@ -30,6 +35,8 @@ public class HorseFormat {
 	
 	// CHESTED
 	boolean chestedIsCarrying;
+	
+	private HorseFormat() {}
 	
 	@Override
 	public String toString()
@@ -163,6 +170,25 @@ public class HorseFormat {
 			res.chestedIsCarrying = ch.isCarryingChest();
 		}
 
+		return res;
+	}
+
+	public static HorseFormat generate() {
+		return generate(Horse.class);
+	}
+	public static HorseFormat generate(Class<? extends AbstractHorse> type)
+	{
+		// TODO find any player and spawn above
+		World world = Bukkit.getWorlds().get(0);
+		Location tempLocation = world.getSpawnLocation();
+		if (tempLocation == null)
+			tempLocation = new Location(world, 0, 64, 0);
+		tempLocation = tempLocation.add(0, 512, 0);
+		
+		// TODO check if spawn can be cancelled
+		AbstractHorse horse = world.spawn(tempLocation, type);
+		HorseFormat res = HorseFormat.fromHorse(horse);
+		res.inventory[0] = new ItemStack(Material.SADDLE);
 		return res;
 	}
 }

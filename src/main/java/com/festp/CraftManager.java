@@ -2,7 +2,6 @@ package com.festp;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Server;
 import org.bukkit.entity.HumanEntity;
@@ -12,7 +11,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.Recipe;
 
-import com.festp.tome.TomeItemHandler;
+import com.festp.handlers.TomeCraftHandler;
 
 public class CraftManager implements Listener {
 	public enum CraftTag { KEEP_DATA, ONLY_SPECIFIC };
@@ -28,14 +27,7 @@ public class CraftManager implements Listener {
 	}
 	
 	public void addCrafts() {
-		TomeItemHandler.addTomeCrafts(plugin, this);
-	}
-	
-	private void giveRecipe(Player p, String recipe) {
-		Bukkit.getServer().dispatchCommand(p, "recipe give "+p.getName()+" "+recipe);
-	}
-	private void giveOwnRecipe(Player p, String recipe) {
-		giveRecipe(p, plugin.getName().toLowerCase()+":"+recipe);
+		TomeCraftHandler.addTomeCrafts(plugin, this);
 	}
 	private void giveRecipe(HumanEntity player, NamespacedKey key) {
 		player.discoverRecipe(key);

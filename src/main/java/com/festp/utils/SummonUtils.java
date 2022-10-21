@@ -1,4 +1,4 @@
-package com.festp.tome;
+package com.festp.utils;
 
 import java.util.UUID;
 
@@ -14,8 +14,7 @@ import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import com.festp.utils.NBTUtils;
-import com.festp.utils.UtilsWorld;
+import com.festp.components.HorseFormat;
 
 public class SummonUtils
 {
@@ -31,11 +30,9 @@ public class SummonUtils
 	public static Location tryFindForMinecart(Location playerLoc, double horRadius) {
 		return UtilsWorld.searchBlock(playerLoc, MINECART_BLOCKS, horRadius, false);
 	}
-	public static Minecart summonMinecart(Location l, Player p, boolean mainHand) {
+	public static Minecart summonMinecart(Location l, Player p) {
 		Minecart mc = l.getWorld().spawn(l, Minecart.class);
 		mc.addPassenger(p);
-		setSummoned(mc);
-		setHasSummoned(p, mainHand, mc);
 		return mc;
 	}
 	
@@ -60,40 +57,36 @@ public class SummonUtils
 		}
 		return res;
 	}
-	public static Boat summonBoat(Location l, Player p, boolean mainHand, TreeSpecies type) {
+	public static Boat summonBoat(Location l, Player p, TreeSpecies type) {
 		l.setPitch(p.getLocation().getPitch());
 		l.setYaw(p.getLocation().getYaw());
 		Boat boat = l.getWorld().spawn(l, Boat.class);
 		boat.setWoodType(type);
 		boat.addPassenger(p);
-		setSummoned(boat);
-		setHasSummoned(p, mainHand, boat);
 		return boat;
 	}
 
 	public static Location tryFindForHorse(Location playerLoc) {
-		return UtilsWorld.findHorseSpace(playerLoc);
+		Location loc = UtilsWorld.findHorseSpace(playerLoc);
+		if (loc == null)
+			return null;
+		loc.setY(playerLoc.getY());
+		return loc;
 	}
-	public static Horse summonHorse(Location l, Player p, boolean mainHand) {
+	public static Horse summonHorse(Location l, Player p) {
 		Horse horse = l.getWorld().spawn(l, Horse.class, (newHorse) ->
 		{
-			newHorse.setTamed(true);
-			newHorse.getInventory().setSaddle(new ItemStack(Material.SADDLE));
-			newHorse.setOwner(p);
-			newHorse.addPassenger(p);
-			setSummoned(newHorse);
-			setHasSummoned(p, mainHand, newHorse);
+			initHorse(newHorse, p);
 		});
 		return horse;
 	}
 	
-	public static AbstractHorse summonCustomHorse(Location l, Player p, boolean mainHand)
+	public static AbstractHorse summonCustomHorse(Location l, Player p, HorseFormat horseData)
 	{
-		HorseFormat horseData = getHorseData(p, mainHand);
-		
 		Class<? extends AbstractHorse> type;
 		if (horseData == null) {
-			type = Horse.class;
+			//type = Horse.class;
+			return null;
 		} else {
 			type = horseData.getHorseClass();
 		}
@@ -103,24 +96,13 @@ public class SummonUtils
 			@Override
 			public void set(AbstractHorse newHorse)
 			{
+				horseData.applyToHorse(newHorse);
+				initHorse(newHorse, p);
 				newHorse.setTamed(true);
-				newHorse.getInventory().setSaddle(new ItemStack(Material.SADDLE)); // if horseData == null
 				newHorse.setOwner(p);
 				newHorse.addPassenger(p);
-				setSummoned(newHorse);
 				setCustomHorse(newHorse);
-				setHasSummoned(p, mainHand, newHorse);
-				
-				if (horseData == null)
-					setHorseData(p, mainHand, HorseFormat.fromHorse(newHorse));
-				else
-					horseData.applyToHorse(newHorse);
 
-				
-				String horseName = getCustomName(p, mainHand);
-				if (horseName != null) {
-					newHorse.setCustomName(horseName);
-				}
 				if (!newHorse.isAdult())
 					newHorse.setAgeLock(true);
 			}
@@ -129,6 +111,14 @@ public class SummonUtils
 		return horse;
 	}
 	
+	private static void initHorse(AbstractHorse horse, Player owner)
+	{
+		horse.setTamed(true);
+		if (horse.getInventory().getSaddle() == null)
+			horse.getInventory().setSaddle(new ItemStack(Material.SADDLE));
+		horse.setOwner(owner);
+		horse.addPassenger(owner);
+	}
 	
 	public static AbstractHorse summonCustomHorse(Location l, Class<? extends AbstractHorse> type, HorseSetter setter) {
 		return l.getWorld().spawn(l, type, (newHorse) -> setter.set(newHorse));
@@ -182,33 +172,11 @@ public class SummonUtils
         	tome = NBTUtils.setString(tome, TAG_HAS_SUMMONED, entityUuid.toString());
         return tome;
 	}
-	private static void setHasSummoned(Player p, boolean mainHand, Entity summoned)
+	public static void setHasSummoned(Player p, boolean mainHand, Entity summoned)
 	{
 		ItemStack tome = getTome(p, mainHand);
 		tome = setHasSummoned(tome, summoned.getUniqueId());
 		setTome(p, mainHand, tome);
-	}
-	private static HorseFormat getHorseData(Player p, boolean mainHand)
-	{
-		ItemStack tome = getTome(p, mainHand);
-		return TomeFormatter.getHorseData(tome);
-	}
-	private static void setHorseData(Player p, boolean mainHand, HorseFormat horseData)
-	{
-		ItemStack tome = getTome(p, mainHand);
-		tome = TomeFormatter.setHorseData(tome, horseData);
-		setTome(p, mainHand, tome);
-	}
-
-	private static String getCustomName(Player p, boolean mainHand) {
-		ItemStack tome = getTome(p, mainHand);
-		if (!tome.getItemMeta().hasDisplayName())
-			return null;
-		String name = tome.getItemMeta().getDisplayName();
-		boolean wasRenamed = !(TomeItemHandler.EN_NAME_CUSTOM_HORSE.contains(name) || TomeItemHandler.EN_NAME_CUSTOM_ALL.contains(name));
-		if (!wasRenamed)
-			return null;
-		return name;
 	}
 	
 	private static ItemStack getTome(Player p, boolean mainHand)

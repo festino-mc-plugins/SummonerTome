@@ -13,8 +13,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
-import com.festp.tome.TomeItemHandler;
-import com.festp.tome.TomeItemHandler.TomeType;
+
+import com.festp.handlers.TomeItemHandler;
+import com.festp.tome.TomeType;
 import com.google.common.collect.Lists;
 
 public class MainCommand  implements CommandExecutor, TabCompleter {
@@ -24,31 +25,34 @@ public class MainCommand  implements CommandExecutor, TabCompleter {
 	String COMMAND_EXAMPLES = ChatColor.GRAY + "Example:\n"
 			+ "  /" + COMMAND + " boat";
 	
+	private final static String NO_PLAYER = ChatColor.RED + "You must be a player to perform this command.";
+	private final static String NO_OP = ChatColor.RED + "You must be an operator to perform this command.";
+	private final static String NO_SPACE = ChatColor.RED + "There are no space in the inventory.";
+
 	List<String> enNames = new ArrayList<>();
-	List<String> ruNames = new ArrayList<>();
 	
 	public MainCommand() {
 		enNames = Lists.asList("", new String[] { "minecart", "boat", "horse", "custom_horse", "all", "custom_all" });
-		ruNames = Lists.asList("", new String[] { "вагонетки", "лодки", "коня", "любого_коня", "всего", "любого_всего" });
 	}
 
 	// TODO any combination of vehicles
+	// all/custom_all or {<list>}, e.g. {minecart, boat}
 	private static ItemStack getItem(String name)
 	{
 		name = name.toLowerCase();
 		ItemStack item = null;
-		if (name.equalsIgnoreCase("minecart") || name.equalsIgnoreCase("вагонет")) {
-			item = TomeItemHandler.getTome(TomeType.MINECART);
-		} else if (name.contains("boat") || name.equalsIgnoreCase("лод")) {
-			item = TomeItemHandler.getTome(TomeType.BOAT);
-		} else if (name.equalsIgnoreCase("horse") || name.equalsIgnoreCase("кон")) {
-			item = TomeItemHandler.getTome(TomeType.HORSE);
-		} else if (name.equalsIgnoreCase("horse") || name.equalsIgnoreCase("любого_кон")) {
-			item = TomeItemHandler.getTome(TomeType.CUSTOM_HORSE);
-		} else if (name.equalsIgnoreCase("all") || name.equalsIgnoreCase("всего")) {
-			item = TomeItemHandler.getTome(TomeType.ALL);
-		} else if (name.equalsIgnoreCase("custom_all") || name.equalsIgnoreCase("любого_всего")) {
-			item = TomeItemHandler.getTome(TomeType.CUSTOM_ALL);
+		if (name.equalsIgnoreCase("minecart")) {
+			item = TomeItemHandler.getNewTome(TomeType.MINECART);
+		} else if (name.equalsIgnoreCase("boat")) {
+			item = TomeItemHandler.getNewTome(TomeType.BOAT);
+		} else if (name.equalsIgnoreCase("horse")) {
+			item = TomeItemHandler.getNewTome(TomeType.HORSE);
+		} else if (name.contains("horse")) {
+			item = TomeItemHandler.getNewTome(TomeType.CUSTOM_HORSE);
+		} else if (name.equalsIgnoreCase("all")) {
+			item = TomeItemHandler.getNewTome(TomeType.getAll());
+		} else if (name.equalsIgnoreCase("custom_all")) {
+			item = TomeItemHandler.getNewTome(TomeType.getCustomAll());
 		}
 		return item;
 	}
@@ -61,11 +65,11 @@ public class MainCommand  implements CommandExecutor, TabCompleter {
 			return false;
 
 		if (!(sender instanceof Player)) {
-			sender.sendMessage(ChatColor.RED + "You must be a player to perform this command.");
+			sender.sendMessage(NO_PLAYER);
 			return false;
 		}
 		if (!sender.isOp()) {
-			sender.sendMessage(ChatColor.RED + "You must be an operator to perform this command.");
+			sender.sendMessage(NO_OP);
 			return false;
 		}
 		if (args.length > 0) {
@@ -93,7 +97,7 @@ public class MainCommand  implements CommandExecutor, TabCompleter {
 						return true;
 					}
 				}
-				sender.sendMessage(ChatColor.RED + "There are no space in the inventory.");
+				sender.sendMessage(NO_SPACE);
 				return false;
 			}
 			return true;
@@ -113,9 +117,6 @@ public class MainCommand  implements CommandExecutor, TabCompleter {
 		if (args.length == 1) {
 			String arg = args[0].toLowerCase();
 			for (String itemName : enNames)
-				if (itemName.contains(arg))
-					options.add(itemName);
-			for (String itemName : ruNames)
 				if (itemName.contains(arg))
 					options.add(itemName);
 		}

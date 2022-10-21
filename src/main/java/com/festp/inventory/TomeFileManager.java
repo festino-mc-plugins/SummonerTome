@@ -1,4 +1,4 @@
-package com.festp.tome;
+package com.festp.inventory;
 
 import java.io.Reader;
 import java.io.StringReader;
@@ -6,8 +6,6 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
-
-import com.festp.inventory.ItemFileManager;
 
 public class TomeFileManager {
 	
