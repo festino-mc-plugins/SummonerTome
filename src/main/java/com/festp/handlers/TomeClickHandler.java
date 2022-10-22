@@ -99,10 +99,10 @@ public class TomeClickHandler implements Listener
 				return;
 		}
 		
-		SummonerTome components = SummonerTome.getTome(item);
-		if (components == null) return;
+		SummonerTome tome = SummonerTome.getTome(item);
+		if (tome == null) return;
 
-		Entity summoned = components.trySummon(player);
+		Entity summoned = tome.trySummon(player);
 		if (summoned == null)
 			return;
 		
