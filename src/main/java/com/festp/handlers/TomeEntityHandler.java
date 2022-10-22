@@ -2,6 +2,7 @@ package com.festp.handlers;
 
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Vehicle;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
@@ -10,6 +11,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.vehicle.VehicleDestroyEvent;
 import org.bukkit.event.vehicle.VehicleExitEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
+import org.bukkit.inventory.InventoryHolder;
 
 import com.festp.DelayedTask;
 import com.festp.TaskList;
@@ -50,9 +52,16 @@ public class TomeEntityHandler implements Listener {
 
 	@EventHandler
 	public void onVehicleExit(VehicleExitEvent event) {
-		if (event.getVehicle().getPassengers().get(0) == event.getExited()) // probably driver
-			if (SummonUtils.wasSummoned(event.getVehicle()))
-				event.getVehicle().remove();
+		Vehicle vehicle = event.getVehicle();
+		if (vehicle.getPassengers().get(0) == event.getExited()) // probably driver
+			if (SummonUtils.wasSummoned(vehicle)) {
+				// ChestBoat workaround, horses are fine without it
+				// may collapse with TomeInventoryHandler saving while lagging
+				// (change inv -> close inv -> exit)
+				if (vehicle instanceof InventoryHolder)
+					((InventoryHolder)vehicle).getInventory().clear();
+				vehicle.remove();
+			}
 	}
 
 	@EventHandler
