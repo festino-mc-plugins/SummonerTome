@@ -7,7 +7,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
 
-public class TomeFileManager {
+public class InventorySerializer {
 	
 	public static ItemStack[] loadInventory(String ymlStr)
 	{

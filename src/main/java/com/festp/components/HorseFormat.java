@@ -13,7 +13,7 @@ import org.bukkit.entity.Horse.Style;
 import org.bukkit.inventory.AbstractHorseInventory;
 import org.bukkit.inventory.ItemStack;
 
-import com.festp.inventory.TomeFileManager;
+import com.festp.inventory.InventorySerializer;
 import com.festp.utils.SummonUtils;
 import com.festp.utils.Utils;
 import com.festp.utils.SummonUtils.HorseSetter;
@@ -47,7 +47,7 @@ public class HorseFormat {
 		json.addProperty("movement_speed", speed);
 		json.addProperty("jump_strength", jumpStrength);
 		json.addProperty("is_adult", isAdult);
-		json.addProperty("inventory", TomeFileManager.saveInventory(inventory));
+		json.addProperty("inventory", InventorySerializer.saveInventory(inventory));
 		if (Horse.class.isAssignableFrom(type)) {
 			json.addProperty("color", horseColor.name());
 			json.addProperty("style", horseStyle.name());
@@ -95,7 +95,7 @@ public class HorseFormat {
 			i++;
 		}*/
 		String inv = json.get("inventory").getAsString();
-		res.inventory = TomeFileManager.loadInventory(inv);
+		res.inventory = InventorySerializer.loadInventory(inv);
 
 		if (Horse.class.isAssignableFrom(res.type)) {
 			res.horseColor = Color.valueOf(json.get("color").getAsString());
