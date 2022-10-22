@@ -1,20 +1,29 @@
 package com.festp.components;
 
 import org.bukkit.Material;
-import org.bukkit.TreeSpecies;
 import org.bukkit.entity.Boat;
+import org.bukkit.entity.ChestBoat;
 import org.bukkit.inventory.ItemStack;
 
-@SuppressWarnings("deprecation")
+import com.festp.inventory.InventorySerializer;
+import com.festp.utils.Utils;
+
 public class BoatData
 {
-	TreeSpecies boatWood = TreeSpecies.GENERIC;
+	private static IBoatDataConverter CONVERTER = getConverter();
+	
+	Material boatMaterial = Material.OAK_BOAT;
 	boolean hasChest = false;
 	ItemStack[] inventory = new ItemStack[0];
 
 	@Override
 	public String toString() {
-		return String.valueOf(boatTypeToChar(boatWood));
+		StringBuilder res = new StringBuilder();
+		res.append(materialToChar(boatMaterial));
+		res.append(hasChest ? '1' : '0');
+		if (hasChest)
+			res.append(InventorySerializer.saveInventory(inventory));
+		return res.toString();
 	}
 	
 	public static BoatData fromString(String data)
@@ -22,69 +31,83 @@ public class BoatData
 		if (data == null || data.length() == 0)
 			throw new IllegalArgumentException("data must not be null or empty!");
 		BoatData res = new BoatData();
-		res.boatWood = charToBoatType(data.charAt(0));
+		res.boatMaterial = charToMaterial(data.charAt(0));
+		if (res.boatMaterial == null)
+			return null;
+		if (data.length() < 2)
+			return null;
+		res.hasChest = data.charAt(1) == '1';
+		if (res.hasChest)
+			res.inventory = InventorySerializer.loadInventory(data.substring(2));
 		return res;
 	}
 
 	public static BoatData fromBoat(Boat boat) {
-		BoatData res = new BoatData();
-		res.boatWood = boat.getWoodType();
-		return res;
+		return CONVERTER.fromBoat(boat);
 	}
 
 	public void applyToBoat(Boat boat) {
-		boat.setWoodType(boatWood);
-	}
-
-	// TODO chested boats (ChestedBoat.class)
-	// TODO mangrove (Boat.Type instead of deprecated TreeSpecies)
-	private static TreeSpecies charToBoatType(char c) {
-    	switch(c)
-    	{
-    	case 'a': return TreeSpecies.ACACIA;
-    	case 'b': return TreeSpecies.BIRCH;
-    	case 'd': return TreeSpecies.DARK_OAK;
-    	case 'j': return TreeSpecies.JUNGLE;
-    	case 'o': return TreeSpecies.GENERIC; // oak
-    	case 's': return TreeSpecies.REDWOOD; // spruce
-		}
-		return null;
+		CONVERTER.applyToBoat(this, boat);
 	}
 	
-	private static char boatTypeToChar(TreeSpecies type) {
-    	switch(type)
-    	{
-    	case ACACIA: return 'a';
-    	case BIRCH: return 'b';
-    	case DARK_OAK: return 'd';
-    	case JUNGLE: return 'j';
-    	case GENERIC: return 'o'; // oak
-    	case REDWOOD: return 's'; // spruce
-		}
-		return 'o';
+	public Class<? extends Boat> getBoatClass() {
+		return hasChest ? ChestBoat.class : Boat.class;
+	}
+	
+	private static IBoatDataConverter getConverter() {
+		boolean above1_19 = Utils.GetVersion() >= 11900;
+		if (above1_19)
+			return new BoatDataConverter1_19();
+		else
+			return new BoatDataConverter1_18();
 	}
 
-	public static BoatData fromBoatMaterial(ItemStack centralCell) {
-		TreeSpecies boatType = getBoatType(centralCell);
+	public static BoatData fromBoatMaterial(ItemStack stack) {
 		BoatData res = new BoatData();
-		res.boatWood = boatType;
+		if (charToMaterial(materialToChar(stack.getType())) != null)
+			res.boatMaterial = stack.getType();
 		return res;
 	}
 	
-	private static TreeSpecies getBoatType(ItemStack boat) {
-		Material woodType = boat.getType();
-		if(woodType == Material.ACACIA_BOAT)
-			return TreeSpecies.ACACIA;
-		else if(woodType == Material.BIRCH_BOAT)
-			return TreeSpecies.BIRCH;
-		else if(woodType == Material.DARK_OAK_BOAT)
-			return TreeSpecies.DARK_OAK;
-		else if(woodType == Material.JUNGLE_BOAT)
-			return TreeSpecies.JUNGLE;
-		else if(woodType == Material.OAK_BOAT)
-			return TreeSpecies.GENERIC;
-		else if(woodType == Material.SPRUCE_BOAT)
-			return TreeSpecies.REDWOOD;
-		return TreeSpecies.GENERIC;
+	private static char materialToChar(Material material) {
+		if (material == Material.ACACIA_BOAT)
+			return 'a';
+		if (material == Material.BIRCH_BOAT)
+			return 'b';
+		if (material == Material.DARK_OAK_BOAT)
+			return 'd';
+		if (material == Material.JUNGLE_BOAT)
+			return 'j';
+		if (material == Material.OAK_BOAT)
+			return 'o';
+		if (material == Material.SPRUCE_BOAT)
+			return 's';
+		boolean above1_19 = Utils.GetVersion() >= 11900;
+		if (above1_19) {
+			if (material == Material.MANGROVE_BOAT)
+				return 'm';
+		}
+		return '?';
+	}
+	
+	private static Material charToMaterial(char c) {
+		if (c == 'a')
+			return Material.ACACIA_BOAT;
+		if (c == 'b')
+			return Material.BIRCH_BOAT;
+		if (c == 'd')
+			return Material.DARK_OAK_BOAT;
+		if (c == 'j')
+			return Material.JUNGLE_BOAT;
+		if (c == 'o')
+			return Material.OAK_BOAT;
+		if (c == 's')
+			return Material.SPRUCE_BOAT;
+		boolean above1_19 = Utils.GetVersion() >= 11900;
+		if (above1_19) {
+			if (c == 'm')
+				return Material.MANGROVE_BOAT;
+		}
+		return null;
 	}
 }

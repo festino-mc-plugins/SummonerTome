@@ -60,8 +60,8 @@ public class SummonUtils
 	public static Boat summonBoat(Location l, Player p, BoatData boatData) {
 		l.setPitch(p.getLocation().getPitch());
 		l.setYaw(p.getLocation().getYaw());
-		Boat boat = l.getWorld().spawn(l, Boat.class);
-		boatData.applyToBoat(boat);
+		Boat boat = l.getWorld().spawn(l, boatData.getBoatClass());
+		boatData.applyToBoat(boat); // TODO fix flickering (use consumer)
 		boat.addPassenger(p);
 		return boat;
 	}
