@@ -1,7 +1,6 @@
 package com.festp.components;
 
 import org.bukkit.Location;
-import org.bukkit.TreeSpecies;
 import org.bukkit.entity.Boat;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -12,7 +11,7 @@ public class BoatComponent implements ITomeComponent
 	private static final double BOAT_SEARCHING_RADIUS = 2.5;
 	public static final char CODE = 'b';
 
-	TreeSpecies boatWood = TreeSpecies.GENERIC;
+	BoatData boatData = new BoatData();
 	
 	public char getCode() {
 		return CODE;
@@ -23,13 +22,11 @@ public class BoatComponent implements ITomeComponent
 	}
 	
 	public String serialize() {
-		return String.valueOf(boatTypeToChar(boatWood));
+		return boatData.toString();
 	}
 	
 	public void deserialize(String data) {
-		if (data == null || data.length() == 0)
-			throw new IllegalArgumentException("data must not be null or empty!");
-    	boatWood = charToBoatType(data.charAt(0));
+		boatData = BoatData.fromString(data);
 	}
 
 	public boolean trySwap(Entity entity)
@@ -38,12 +35,10 @@ public class BoatComponent implements ITomeComponent
 			return false;
 		Boat boat = (Boat)entity;
 		
-		if (boatWood == boat.getWoodType())
-			return false;
-		TreeSpecies prevWood = boatWood;
+		BoatData newData = BoatData.fromBoat(boat);
+		boatData.applyToBoat(boat);
+		boatData = newData;
 		
-		boatWood = boat.getWoodType();
-		boat.setWoodType(prevWood);
 		return true;
 	}
 
@@ -53,40 +48,14 @@ public class BoatComponent implements ITomeComponent
 
 	@Override
 	public Entity summon(Player summoner, Location loc) {
-		return SummonUtils.summonBoat(loc, summoner, boatWood);
+		return SummonUtils.summonBoat(loc, summoner, boatData);
 	}
 
-	public void setBoat(TreeSpecies boatType) {
-		boatWood = boatType;
+	public void setBoatData(BoatData data) {
+		boatData = data;
 	}
 
-	public TreeSpecies getBoat() {
-		return boatWood;
-	}
-	
-	private static TreeSpecies charToBoatType(char c) {
-    	switch(c)
-    	{
-    	case 'a': return TreeSpecies.ACACIA;
-    	case 'b': return TreeSpecies.BIRCH;
-    	case 'd': return TreeSpecies.DARK_OAK;
-    	case 'j': return TreeSpecies.JUNGLE;
-    	case 'o': return TreeSpecies.GENERIC; // oak
-    	case 's': return TreeSpecies.REDWOOD; // spruce
-		}
-		return null;
-	}
-	
-	private static char boatTypeToChar(TreeSpecies type) {
-    	switch(type)
-    	{
-    	case ACACIA: return 'a';
-    	case BIRCH: return 'b';
-    	case DARK_OAK: return 'd';
-    	case JUNGLE: return 'j';
-    	case GENERIC: return 'o'; // oak
-    	case REDWOOD: return 's'; // spruce
-		}
-		return 'o';
+	public BoatData getBoatData() {
+		return boatData;
 	}
 }

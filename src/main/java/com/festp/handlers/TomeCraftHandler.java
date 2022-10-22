@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.TreeSpecies;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.CraftItemEvent;
@@ -24,6 +23,7 @@ import org.bukkit.potion.PotionType;
 import com.festp.CraftManager;
 import com.festp.Main;
 import com.festp.components.BoatComponent;
+import com.festp.components.BoatData;
 import com.festp.components.CustomHorseComponent;
 import com.festp.components.HorseComponent;
 import com.festp.components.HorseFormat;
@@ -300,27 +300,9 @@ public class TomeCraftHandler implements Listener
 		BoatComponent boatComp = tome.getComponent(BoatComponent.class);
 		if (boatComp != null) {
 			ItemStack centralCell = event.getInventory().getMatrix()[4];
-			TreeSpecies boatType = getBoatType(centralCell);
-			boatComp.setBoat(boatType);
+			boatComp.setBoatData(BoatData.fromBoatMaterial(centralCell));
 			curResult = tome.setTome(curResult);
 	    	event.getInventory().setResult(curResult);
 		}
-	}
-	
-	private static TreeSpecies getBoatType(ItemStack boat) {
-		Material woodType = boat.getType();
-		if(woodType == Material.ACACIA_BOAT)
-			return TreeSpecies.ACACIA;
-		else if(woodType == Material.BIRCH_BOAT)
-			return TreeSpecies.BIRCH;
-		else if(woodType == Material.DARK_OAK_BOAT)
-			return TreeSpecies.DARK_OAK;
-		else if(woodType == Material.JUNGLE_BOAT)
-			return TreeSpecies.JUNGLE;
-		else if(woodType == Material.OAK_BOAT)
-			return TreeSpecies.GENERIC;
-		else if(woodType == Material.SPRUCE_BOAT)
-			return TreeSpecies.REDWOOD;
-		return TreeSpecies.GENERIC;
 	}
 }

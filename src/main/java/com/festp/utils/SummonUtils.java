@@ -5,7 +5,6 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.TreeSpecies;
 import org.bukkit.entity.AbstractHorse;
 import org.bukkit.entity.Boat;
 import org.bukkit.entity.Entity;
@@ -14,6 +13,7 @@ import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import com.festp.components.BoatData;
 import com.festp.components.HorseFormat;
 
 public class SummonUtils
@@ -57,11 +57,11 @@ public class SummonUtils
 		}
 		return res;
 	}
-	public static Boat summonBoat(Location l, Player p, TreeSpecies type) {
+	public static Boat summonBoat(Location l, Player p, BoatData boatData) {
 		l.setPitch(p.getLocation().getPitch());
 		l.setYaw(p.getLocation().getYaw());
 		Boat boat = l.getWorld().spawn(l, Boat.class);
-		boat.setWoodType(type);
+		boatData.applyToBoat(boat);
 		boat.addPassenger(p);
 		return boat;
 	}
