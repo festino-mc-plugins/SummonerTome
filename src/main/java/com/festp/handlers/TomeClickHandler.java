@@ -13,6 +13,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
+import org.bukkit.event.inventory.InventoryInteractEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.AbstractHorseInventory;
@@ -128,46 +130,33 @@ public class TomeClickHandler implements Listener
 	@EventHandler
 	public void onInventoryClick(InventoryClickEvent event)
 	{
-		if (event.isCancelled()) return;
+		if (!startEvent(event))
+			return;
 
 		InventoryAction action = event.getAction();
 		if (action == InventoryAction.CLONE_STACK)
 			return;
 		
-		Inventory topInv = event.getView().getTopInventory();
-		if (!(topInv.getHolder() instanceof AbstractHorse))
-			return;
-		
-		AbstractHorse horse = (AbstractHorse)topInv.getHolder();
-		if (!SummonUtils.wasSummoned(horse))
-			return;
-		
-		if (isIllegalCustomHorse(horse, (Player) horse.getOwner())) {
-			event.setCancelled(true);
-			horse.remove();
-			return;
-		}
-		
 		int slot = event.getRawSlot();
 		if (slot < 0) return;
+		
+		Inventory topInv = event.getView().getTopInventory();
+		AbstractHorse horse = (AbstractHorse)topInv.getHolder();
 		
 		boolean illegal = false;
 		Inventory inv = event.getClickedInventory();
 		if (inv instanceof AbstractHorseInventory)
 		{
-			AbstractHorseInventory hinv = (AbstractHorseInventory) inv;
-
 			// removing the saddle is always illegal
 			if (slot == 0)
 			{
 				if (action != InventoryAction.UNKNOWN)
 					illegal = true;
 			}
-			else if (!SummonUtils.isCustomHorse((AbstractHorse) hinv.getHolder()))
+			else if (!SummonUtils.isCustomHorse(horse))
 			{
-				// TODO fix armor (double-click)
 				// is saddle/armor or is chested horse inventory
-				if (slot < 2 || slot < 17 && hinv.getHolder() instanceof ChestedHorse && ((ChestedHorse)hinv.getHolder()).isCarryingChest())
+				if (slot < 2 || slot < 17 && horse instanceof ChestedHorse && ((ChestedHorse)horse).isCarryingChest())
 					if (action != InventoryAction.UNKNOWN)
 						illegal = true;
 			}
@@ -185,14 +174,71 @@ public class TomeClickHandler implements Listener
 			}
 		}
 
-		Player p = (Player) event.getWhoClicked();
-		if (illegal) {
+		if (illegal)
 			event.setCancelled(true);
-		} else {
-			// delayed tome update (player has modified inventory)
-			if (SummonUtils.isCustomHorse(horse))
-				addSavingTome(horse, p);
+		else
+			trySaveHorse((Player) event.getWhoClicked(), horse);
+	}
+	
+	@EventHandler
+    public void onDrag(InventoryDragEvent event)
+	{
+		if (!startEvent(event))
+			return;
+
+		Inventory topInv = event.getView().getTopInventory();
+		AbstractHorse horse = (AbstractHorse)topInv.getHolder();
+		
+		boolean affectsHorse = false;
+		int maxHorseSlot = topInv.getSize();
+		for (Integer slot : event.getInventorySlots())
+			if (slot < maxHorseSlot) {
+				affectsHorse = true;
+				break;
+			}
+		
+		boolean illegal = false;
+		if (affectsHorse)
+		{
+			if (!SummonUtils.isCustomHorse(horse))
+			{
+				illegal = true;
+			}
 		}
+
+		if (illegal)
+			event.setCancelled(true);
+		else
+			trySaveHorse((Player) event.getWhoClicked(), horse);
+	}
+	
+	/** Checks if the top inventory is an inventory of a summoned horse. If the horse is illegal, it will be removed. */
+	private boolean startEvent(InventoryInteractEvent event)
+	{
+		if (event.isCancelled())
+			return false;
+
+		Inventory topInv = event.getView().getTopInventory();
+		if (!(topInv.getHolder() instanceof AbstractHorse))
+			return false;
+		
+		AbstractHorse horse = (AbstractHorse)topInv.getHolder();
+		if (!SummonUtils.wasSummoned(horse))
+			return false;
+		
+		if (isIllegalCustomHorse(horse, (Player) horse.getOwner())) {
+			event.setCancelled(true);
+			horse.remove();
+			return false;
+		}
+		
+		return true;
+	}
+	private void trySaveHorse(Player player, AbstractHorse horse)
+	{
+		// delayed tome update (player has modified inventory)
+		if (SummonUtils.isCustomHorse(horse))
+			addSavingTome(horse, player);
 	}
 	
 	private static int findTomeSlot(ItemStack[] inv, Entity entity)
