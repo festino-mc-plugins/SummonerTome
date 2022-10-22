@@ -8,6 +8,7 @@ import com.festp.commands.MainCommand;
 import com.festp.handlers.TomeClickHandler;
 import com.festp.handlers.TomeCraftHandler;
 import com.festp.handlers.TomeEntityHandler;
+import com.festp.handlers.TomeInventoryHandler;
 import com.festp.utils.NBTUtils;
 
 public class Main extends JavaPlugin
@@ -31,6 +32,8 @@ public class Main extends JavaPlugin
     	pm.registerEvents(craftHandler, this);
     	TomeClickHandler clickHandler = new TomeClickHandler();
     	pm.registerEvents(clickHandler, this);
+    	TomeInventoryHandler inventoryHandler = new TomeInventoryHandler();
+    	pm.registerEvents(inventoryHandler, this);
     	TomeEntityHandler entityHandler = new TomeEntityHandler();
     	pm.registerEvents(entityHandler, this);
     	
@@ -42,8 +45,8 @@ public class Main extends JavaPlugin
 				public void run() {
 					TaskList.tick();
 					
-					//save horse data to tome
-					clickHandler.tick();
+					// save boat and horse data to tomes
+					inventoryHandler.tick();
 				}
 			}, 0L, 1L);
 		

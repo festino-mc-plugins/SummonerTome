@@ -7,8 +7,6 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import com.festp.components.CustomHorseComponent;
-import com.festp.components.HorseFormat;
 import com.festp.components.ITomeComponent;
 import com.festp.handlers.TomeItemHandler;
 
@@ -72,36 +70,16 @@ public class SummonerTome
 		
 		return resComponent.summon(summoner, curLoc);
 	}
-	
-	public static HorseFormat getHorseData(ItemStack item)
-	{
-	    ITomeComponent[] components = getTome(item).components;
-	    if (components == null)
-	    	return null;
 
-	    CustomHorseComponent horseComp = null;
-	    for (ITomeComponent comp : components)
-	    	if (comp instanceof CustomHorseComponent) {
-	    		horseComp = (CustomHorseComponent)comp;
-	    		break;
-	    	}
-	    
-	    if (horseComp == null)
-	    	return null;
-	    return horseComp.getHorseData();
-	}
-
-	public static ItemStack setHorseData(ItemStack item, HorseFormat horseData)
+	public void replaceOrAdd(ITomeComponent component)
 	{
-		SummonerTome tome = getTome(item);
-	    ITomeComponent[] components = tome.components;
 	    if (components == null)
 	    	components = new ITomeComponent[0];
 
 	    int index = -1;
 	    for (int i = 0; i < components.length; i++) {
 	    	ITomeComponent comp = components[i];
-	    	if (comp instanceof CustomHorseComponent) {
+	    	if (comp.getClass() == component.getClass()) { // TODO test if bad condition
 	    		index = i;
 	    		break;
 	    	}
@@ -112,12 +90,7 @@ public class SummonerTome
 	    	index = components.length;
 	    	components = Arrays.copyOf(components, components.length + 1);
 	    }
-	    
-	    CustomHorseComponent horseComp = new CustomHorseComponent();
-	    horseComp.setHorseData(horseData);
-    	components[index] = horseComp;
-    	tome.components = components;
-		return tome.setTome(item);
+	    components[index] = component;
 	}
 
 	/** @return null if there is no component of the desired class */
