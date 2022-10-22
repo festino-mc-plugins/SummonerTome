@@ -23,7 +23,7 @@ public class TomeEntityHandler implements Listener {
 	public void onPlayerDropTome(PlayerDropItemEvent event) {
 		Entity summoned = SummonUtils.getHasSummoned(event.getItemDrop().getItemStack());
 		if (summoned != null) {
-			summoned.remove();
+			removeEntity(summoned);
 		}
 	}
 	
@@ -39,14 +39,14 @@ public class TomeEntityHandler implements Listener {
 	public void onChunkLoad(ChunkLoadEvent event) {
 		for (Entity e : event.getChunk().getEntities())
 			if (SummonUtils.wasSummoned(e) && e.getPassengers().size() == 0)
-				e.remove();
+				removeEntity(e);
 	}
 
 	@EventHandler
 	public void onVehicleDestroy(VehicleDestroyEvent event) {
 		if (SummonUtils.wasSummoned(event.getVehicle())) {
 			event.setCancelled(true);
-			event.getVehicle().remove();
+			removeEntity(event.getVehicle());
 		}
 	}
 
@@ -55,12 +55,7 @@ public class TomeEntityHandler implements Listener {
 		Vehicle vehicle = event.getVehicle();
 		if (vehicle.getPassengers().get(0) == event.getExited()) // probably driver
 			if (SummonUtils.wasSummoned(vehicle)) {
-				// ChestBoat workaround, horses are fine without it
-				// may collapse with TomeInventoryHandler saving while lagging
-				// (change inv -> close inv -> exit)
-				if (vehicle instanceof InventoryHolder)
-					((InventoryHolder)vehicle).getInventory().clear();
-				vehicle.remove();
+				removeEntity(vehicle);
 			}
 	}
 
@@ -74,10 +69,20 @@ public class TomeEntityHandler implements Listener {
 				{
 					Entity vehicle = joined.getVehicle();
 					if (SummonUtils.wasSummoned(vehicle)) {
-						vehicle.remove();
+						removeEntity(vehicle);
 					}
 				}
 			}
 		}));
+	}
+	
+	private static void removeEntity(Entity entity)
+	{
+		// ChestBoat workaround, horses are fine without it
+		// may collapse with TomeInventoryHandler saving while lagging
+		// (change inv -> close inv -> exit)
+		if (entity instanceof InventoryHolder)
+			((InventoryHolder)entity).getInventory().clear();
+		entity.remove();
 	}
 }
