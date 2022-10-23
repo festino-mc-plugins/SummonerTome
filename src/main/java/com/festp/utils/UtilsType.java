@@ -277,8 +277,15 @@ public class UtilsType {
 		return false;
 	}
 	
-	public static boolean playerCanStay(Block b) { // TODO: correct slabs
-		return isTransparent(b.getType()) && isTransparent(b.getRelative(0, 1, 0).getType()) && !isTransparent(b.getRelative(0, -1, 0).getType());
+	public static boolean isSolid(Material m) {
+		return !isTransparent(m) && !isLiquid(m);
+	}
+	
+	private static boolean isLiquid(Material m) {
+		return m == Material.WATER || m == Material.LAVA;
+	}
+	public static boolean playerCanStayIn(Block b) { // TODO: correct slabs
+		return isTransparent(b.getType()) && isTransparent(b.getRelative(0, 1, 0).getType()) && isSolid(b.getRelative(0, -1, 0).getType());
 	}
 	
 	public static boolean playerCanFlyOn(Block b) {
