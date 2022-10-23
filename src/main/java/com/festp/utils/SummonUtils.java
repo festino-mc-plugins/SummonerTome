@@ -11,6 +11,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Horse;
 import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Strider;
 import org.bukkit.inventory.ItemStack;
 
 import com.festp.components.BoatData;
@@ -23,9 +24,11 @@ public class SummonUtils
 	private static final String SBTAG_FROM_TOME = "fromtome"; 
 	
 	private static final Material[] BOAT_BLOCKS =
-			{Material.WATER, Material.ICE, Material.PACKED_ICE, Material.BLUE_ICE, Material.FROSTED_ICE, Material.SEA_PICKLE, Material.SEAGRASS, Material.TALL_SEAGRASS};
+			{ Material.WATER, Material.ICE, Material.PACKED_ICE, Material.BLUE_ICE, Material.FROSTED_ICE, Material.SEA_PICKLE, Material.SEAGRASS, Material.TALL_SEAGRASS };
 	private static final Material[] MINECART_BLOCKS =
-			{Material.RAIL, Material.ACTIVATOR_RAIL, Material.DETECTOR_RAIL, Material.POWERED_RAIL};
+			{ Material.RAIL, Material.ACTIVATOR_RAIL, Material.DETECTOR_RAIL, Material.POWERED_RAIL };
+	private static final Material[] STRIDER_BLOCKS =
+		{ Material.LAVA };
 	
 	public static Location tryFindForMinecart(Location playerLoc, double horRadius) {
 		return UtilsWorld.searchBlock(playerLoc, MINECART_BLOCKS, horRadius, false);
@@ -34,6 +37,16 @@ public class SummonUtils
 		Minecart mc = l.getWorld().spawn(l, Minecart.class);
 		mc.addPassenger(p);
 		return mc;
+	}
+	
+	public static Location tryFindForStrider(Location playerLoc, double horRadius) {
+		return UtilsWorld.searchBlock(playerLoc.add(0, -1, 0), STRIDER_BLOCKS, horRadius, true);
+	}
+	public static Strider summonStrider(Location l, Player p) {
+		Strider strider = l.getWorld().spawn(l, Strider.class);
+		strider.setSaddle(true);
+		strider.addPassenger(p);
+		return strider;
 	}
 	
 	public static Location tryFindForBoat(Location playerLoc, double horRadius) {
