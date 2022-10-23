@@ -8,7 +8,7 @@ import com.festp.utils.SummonUtils;
 
 public class MinecartComponent implements ITomeComponent
 {
-	private static final double MINECART_SEARCHING_RADIUS = 1.5;
+	private static final double RAIL_SEARCHING_RADIUS = 1.5;
 	public static final char CODE = 'm';
 	
 	public char getCode() {
@@ -30,7 +30,7 @@ public class MinecartComponent implements ITomeComponent
 	}
 	
 	public Location getSummonLocation(Location playerLoc) {
-		return SummonUtils.tryFindForMinecart(playerLoc, MINECART_SEARCHING_RADIUS);
+		return SummonUtils.tryFindForMinecart(playerLoc, RAIL_SEARCHING_RADIUS);
 	}
 
 	public Entity summon(Player summoner, Location loc) {
