@@ -1,6 +1,8 @@
 package com.festp.handlers;
 
+import org.bukkit.Location;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Vehicle;
 import org.bukkit.event.EventHandler;
@@ -16,6 +18,7 @@ import org.bukkit.inventory.InventoryHolder;
 import com.festp.DelayedTask;
 import com.festp.TaskList;
 import com.festp.utils.SummonUtils;
+import com.festp.utils.UtilsWorld;
 
 public class TomeEntityHandler implements Listener {
 	
@@ -83,6 +86,23 @@ public class TomeEntityHandler implements Listener {
 		// (change inv -> close inv -> exit)
 		if (entity instanceof InventoryHolder)
 			((InventoryHolder)entity).getInventory().clear();
+		// entity.eject(); and passenger.leaveVehicle(); are not working; critical for striders
+		eject(entity);
 		entity.remove();
+	}
+	
+	private static void eject(Entity entity)
+	{
+		for (Entity passenger : entity.getPassengers())
+		{
+			double saddleHeight = (entity instanceof LivingEntity) ? ((LivingEntity)entity).getEyeHeight() : 0.0;
+			Location passengerloc = entity.getLocation().add(0.0, saddleHeight, 0.0);
+			Location loc = UtilsWorld.findEjectBlock2x2(passengerloc);
+			if (loc == null) {
+				loc = passengerloc;
+			}
+			loc.setDirection(passenger.getLocation().getDirection());
+			passenger.teleport(loc);
+		}
 	}
 }

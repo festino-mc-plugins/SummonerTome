@@ -3,10 +3,11 @@ package com.festp.utils;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 
 public class UtilsWorld
 {
-	public static Location searchBlock(Location loc, Material[] blocks, double horRadius, boolean playerCanStay)
+	public static Location searchBlock(Location loc, Material[] blocks, double horRadius, boolean playerCanFly)
 	{
 		boolean xPriority = false, zPriority = false;
 		if (getBlockCenterOffset(loc.getX()) > 0) xPriority = true;
@@ -16,7 +17,7 @@ public class UtilsWorld
 			xPriorierZ = false;
 		Block start_block = loc.getBlock();
 		Block foundBlock = null;
-		boolean player_cant_stay = !playerCanStay;
+		boolean noPlayerCanFly = !playerCanFly;
 		searching :
 		{
 			for (int r = 0; r <= 1.1 * horRadius; r++) {
@@ -29,20 +30,20 @@ public class UtilsWorld
 							for (int dx : dxPool)
 								for (int dz : dzPool) {
 									foundBlock = start_block.getRelative(dx, dy, dz);
-									if (Utils.contains(blocks, foundBlock.getType()) && (player_cant_stay || UtilsType.playerCanStay(foundBlock)))
+									if (Utils.contains(blocks, foundBlock.getType()) && (noPlayerCanFly || UtilsType.playerCanFlyOn(foundBlock)))
 										break searching;
 									foundBlock = start_block.getRelative(dx, -dy, dz);
-									if (Utils.contains(blocks, foundBlock.getType()) && (player_cant_stay || UtilsType.playerCanStay(foundBlock)))
+									if (Utils.contains(blocks, foundBlock.getType()) && (noPlayerCanFly || UtilsType.playerCanFlyOn(foundBlock)))
 										break searching;
 								}
 						else
 							for (int dz : dzPool)
 								for (int dx : dxPool) {
 									foundBlock = start_block.getRelative(dx, dy, dz);
-									if (Utils.contains(blocks, foundBlock.getType()) && (player_cant_stay || UtilsType.playerCanStay(foundBlock)))
+									if (Utils.contains(blocks, foundBlock.getType()) && (noPlayerCanFly || UtilsType.playerCanFlyOn(foundBlock)))
 										break searching;
 									foundBlock = start_block.getRelative(dx, -dy, dz);
-									if (Utils.contains(blocks, foundBlock.getType()) && (player_cant_stay || UtilsType.playerCanStay(foundBlock)))
+									if (Utils.contains(blocks, foundBlock.getType()) && (noPlayerCanFly || UtilsType.playerCanFlyOn(foundBlock)))
 										break searching;
 								}
 					}
@@ -185,6 +186,44 @@ public class UtilsWorld
 		return false;
 	}
 	
+	public static Location findEjectBlock2x2(Location playerLoc)
+	{
+		int dx = 1, dz = 1;
+		if (getBlockCenterOffset(playerLoc.getX()) < 0)
+			dx = -1;
+		if (getBlockCenterOffset(playerLoc.getZ()) < 0)
+			dz = -1;
+
+		Block startBlock = playerLoc.getBlock();
+		Block blockStayIn = findEjectBlock2x2(startBlock, dx, dz);
+		if (blockStayIn == null) {
+			startBlock = startBlock.getRelative(BlockFace.DOWN);
+			blockStayIn = findEjectBlock2x2(startBlock, dx, dz);
+			if (blockStayIn == null) {
+				startBlock = startBlock.getRelative(BlockFace.UP).getRelative(BlockFace.UP);
+				blockStayIn = findEjectBlock2x2(startBlock, dx, dz);
+			}
+		}
+		if (blockStayIn == null)
+			return null;
+		return blockStayIn.getLocation().add(0.5, 0, 0.5);
+	}
+	private static Block findEjectBlock2x2(Block start, int dx, int dz)
+	{
+		if (UtilsType.playerCanStayIn(start))
+			return start;
+		start = start.getRelative(dx, 0, 0);
+		if (UtilsType.playerCanStayIn(start))
+			return start;
+		start = start.getRelative(-dx, 0, dz);
+		if (UtilsType.playerCanStayIn(start))
+			return start;
+		start = start.getRelative(dx, 0, 0);
+		if (UtilsType.playerCanStayIn(start))
+			return start;
+		return null;
+	}
+	
 	public static Location findHorseSpace(Location loc)
 	{
 		Block startBlock = loc.add(0, -1, 0).getBlock();
@@ -203,7 +242,7 @@ public class UtilsWorld
 		// fill the grid
 		for (int i = 0; i < 9; i++) {
 			Block b = startBlock.getRelative(i % 3 - 1, 0, i / 3 - 1);
-			if (UtilsType.playerCanStay(b.getRelative(0, 1, 0))) 
+			if (UtilsType.playerCanStayIn(b.getRelative(0, 1, 0))) 
 				grid[i] = 2;
 			else if (UtilsType.playerCanFlyOn(b)) 
 				grid[i] = 1;
