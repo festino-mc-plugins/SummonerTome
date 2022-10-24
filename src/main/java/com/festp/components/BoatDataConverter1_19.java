@@ -5,6 +5,8 @@ import org.bukkit.Material;
 import org.bukkit.entity.Boat;
 import org.bukkit.entity.ChestBoat;
 
+import com.festp.handlers.TomeEntityHandler;
+
 public class BoatDataConverter1_19 implements IBoatDataConverter
 {
 	public BoatData fromBoat(Boat boat)
@@ -24,7 +26,7 @@ public class BoatDataConverter1_19 implements IBoatDataConverter
 		if (!desiredClass.isAssignableFrom(boat.getClass())
 				|| desiredClass == Boat.class && boat instanceof ChestBoat) { // dirty code
 			Location loc = boat.getLocation();
-			boat.remove();
+			TomeEntityHandler.removeEntity(boat);
 			boat = loc.getWorld().spawn(loc, desiredClass);
 			boat.teleport(loc);
 		}

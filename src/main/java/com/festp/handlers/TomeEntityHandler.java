@@ -79,7 +79,7 @@ public class TomeEntityHandler implements Listener {
 		}));
 	}
 	
-	private static void removeEntity(Entity entity)
+	public static void removeEntity(Entity entity)
 	{
 		// ChestBoat workaround, horses are fine without it
 		// may collapse with TomeInventoryHandler saving while lagging
