@@ -6,6 +6,7 @@ import java.util.Map;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Tag;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.RayTraceResult;
@@ -173,17 +174,15 @@ public class UtilsType
 		return is == null || isAir(is.getType());
 	}
 	
-	public static boolean isInteractable(Material m) {
-		return is_shulker_box(m) || isButton(m) || isWoodenDoor(m) || isGate(m) || isWoodenTrapdoor(m)
-				|| m == Material.CHEST || m == Material.TRAPPED_CHEST || m == Material.ENDER_CHEST || m == Material.FURNACE || m == Material.CRAFTING_TABLE
-				|| m == Material.DISPENSER || m == Material.DROPPER || m == Material.ENCHANTING_TABLE || m == Material.BREWING_STAND
-				|| m == Material.ANVIL || m == Material.CHIPPED_ANVIL || m == Material.DAMAGED_ANVIL
-				|| m == Material.HOPPER || m == Material.REPEATER || m == Material.COMPARATOR || m == Material.LEVER
-				|| m == Material.LOOM || m == Material.CARTOGRAPHY_TABLE || m == Material.GRINDSTONE || m == Material.STONECUTTER || m == Material.BELL
-				//|| m == Material.FLETCHING_TABLE
-				|| m == Material.SMITHING_TABLE || m == Material.CAMPFIRE || m == Material.SOUL_CAMPFIRE
-				|| m == Material.BARREL || m == Material.LECTERN || m == Material.SMOKER || m == Material.BLAST_FURNACE
-				|| m == Material.COMMAND_BLOCK || m == Material.CHAIN_COMMAND_BLOCK || m == Material.REPEATING_COMMAND_BLOCK;
+	public static boolean isInteractable(Material m)
+	{
+		if (!m.isInteractable())
+			return false;
+		// tags are 1.13+, for 1.12-:
+		// https://www.spigotmc.org/threads/check-if-a-block-is-interactable.535861/
+		return !Tag.FENCES.isTagged(m) && !Tag.STAIRS.isTagged(m)
+				&& m != Material.REDSTONE_ORE && m != Material.PUMPKIN && m != Material.MOVING_PISTON
+				&& m != Material.REDSTONE_WIRE;
 	}
 	
 	public static boolean is_colored_shulker_box(Material m) {
