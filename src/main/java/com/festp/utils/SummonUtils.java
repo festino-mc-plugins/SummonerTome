@@ -49,12 +49,11 @@ public class SummonUtils
 		return strider;
 	}
 	
-	public static Location tryFindForBoat(Location playerLoc, double horRadius) {
+	public static Location tryFindForBoat(Location loc, double horRadius) {
 		// TODO watered bottom blocks
 		// TODO smarter function for boats:
 		//      fill one square grid, then check player loc
 		//      and iterate squares on smaller grid(0.5 block) to find the nearest place to spawn
-		Location loc = playerLoc.clone();
 		loc.add(0, 0.5, 0);
 		loc.setY(Math.floor(loc.getY() - 1));
 		Location l_3x3 = UtilsWorld.searchArea_3x3(loc, BOAT_BLOCKS);

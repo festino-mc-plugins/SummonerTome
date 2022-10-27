@@ -255,17 +255,17 @@ public class UtilsWorld
 			int[] cells;
 			// 4 is center index
 			if (i == 0)
-				// 0+++ = priority cells at first
+				// 0++ ++ = priority cells at first
 				cells = new int[] {4, 4 + xStep, 4 + zStep, 4 + xStep + zStep};
 			else if (i == 3)
-				// 0--- = non-priority cells at last
-				cells = new int[]{4, 4 - xStep, 4 - zStep, 4 - xStep - zStep};
+				// 0-- -- = non-priority cells at last
+				cells = new int[] {4, 4 - xStep, 4 - zStep, 4 - xStep - zStep};
 			else if (i == 1 && xPriorierZ || i == 2 && !xPriorierZ) // priority matters here
-				// 0+-+-
-				cells = new int[]{4, 4 + xStep, 4 - zStep, 4 + xStep - zStep};
+				// 0+- +-
+				cells = new int[] {4, 4 + xStep, 4 - zStep, 4 + xStep - zStep};
 			else
-				// 0-+-+
-				cells = new int[]{4, 4 - xStep, 4 + zStep, 4 - xStep + zStep};
+				// 0-+ -+
+				cells = new int[] {4, 4 - xStep, 4 + zStep, 4 - xStep + zStep};
 			
 			boolean hasGround = grid[cells[0]] == 2 || grid[cells[1]] == 2 || grid[cells[2]] == 2 || grid[cells[3]] == 2;
 			boolean isClearArea = grid[cells[0]] > 0 && grid[cells[1]] > 0 && grid[cells[2]] > 0 && grid[cells[3]] > 0;

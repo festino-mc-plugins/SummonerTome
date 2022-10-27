@@ -58,7 +58,7 @@ public class SummonerTome
 			if (resComponent != null && component.getPriority() != resComponent.getPriority()) {
 				break;
 			}
-			Location loc = component.getSummonLocation(playerLoc);
+			Location loc = component.getSummonLocation(playerLoc.clone());
 			if (loc != null && (curLoc == null || playerLoc.distanceSquared(loc) < playerLoc.distanceSquared(curLoc))) {
 				curLoc = loc;
 				resComponent = component;
