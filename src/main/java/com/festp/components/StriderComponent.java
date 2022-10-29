@@ -19,7 +19,7 @@ public class StriderComponent implements ITomeComponent
 	}
 	
 	public int getPriority() {
-		return 10;
+		return 9;
 	}
 	
 	public String serialize() {

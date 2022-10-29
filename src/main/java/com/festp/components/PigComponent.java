@@ -18,7 +18,7 @@ public class PigComponent implements ITomeComponent
 	}
 	
 	public int getPriority() {
-		return 9;
+		return 8;
 	}
 	
 	public String serialize() {
