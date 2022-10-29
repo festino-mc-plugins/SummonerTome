@@ -31,6 +31,8 @@ import com.festp.components.ITomeComponent;
 import com.festp.components.MinecartComponent;
 import com.festp.tome.SummonerTome;
 import com.festp.tome.TomeType;
+import com.festp.utils.Utils;
+import com.festp.utils.UtilsRandom;
 
 public class TomeCraftHandler implements Listener
 {
@@ -54,14 +56,15 @@ public class TomeCraftHandler implements Listener
     	// all tomes with boats can be customized by all the 6 boat types
     	ItemStack boat_book = TomeItemHandler.getNewTome(EnumSet.of(TomeType.BOAT));
     	ShapelessRecipe boat_tome = new ShapelessRecipe(key_boat, boat_book);
+    	RecipeChoice.MaterialChoice boatChoice = new RecipeChoice.MaterialChoice(BoatData.getSupportedBoats());
     	boat_tome.addIngredient(1, Material.BOOK);
     	boat_tome.addIngredient(2, Material.EXPERIENCE_BOTTLE);
-    	boat_tome.addIngredient(1, Material.ACACIA_BOAT);
-    	boat_tome.addIngredient(1, Material.BIRCH_BOAT);
-    	boat_tome.addIngredient(1, Material.DARK_OAK_BOAT);
-    	boat_tome.addIngredient(1, Material.JUNGLE_BOAT);
-    	boat_tome.addIngredient(1, Material.OAK_BOAT);
-    	boat_tome.addIngredient(1, Material.SPRUCE_BOAT);
+    	boat_tome.addIngredient(boatChoice);
+    	boat_tome.addIngredient(boatChoice);
+    	boat_tome.addIngredient(boatChoice);
+    	boat_tome.addIngredient(boatChoice);
+    	boat_tome.addIngredient(boatChoice);
+    	boat_tome.addIngredient(boatChoice);
     	craftManager.addRecipe(key_boat, boat_tome);
     	
 		// horse tome - book, 2 xp bottles, 4 saddles, 2 (leads?)
@@ -299,8 +302,17 @@ public class TomeCraftHandler implements Listener
 		
 		BoatComponent boatComp = tome.getComponent(BoatComponent.class);
 		if (boatComp != null) {
-			ItemStack centralCell = event.getInventory().getMatrix()[4];
-			boatComp.setBoatData(BoatData.fromBoatMaterial(centralCell));
+			int count = 0;
+			Material boatMaterial = Material.OAK_BOAT;
+			// choose any of the boats with equal probability
+			for (ItemStack item : event.getInventory().getMatrix()) {
+				if (Utils.contains(BoatData.getSupportedBoats(), item.getType())) {
+					count++;
+					if (UtilsRandom.getDouble() < 1.0 / count)
+						boatMaterial = item.getType();
+				}
+			}
+			boatComp.setBoatData(BoatData.fromBoatMaterial(boatMaterial));
 			curResult = tome.setTome(curResult);
 	    	event.getInventory().setResult(curResult);
 		}

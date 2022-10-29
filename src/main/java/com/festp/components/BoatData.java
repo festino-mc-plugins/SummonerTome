@@ -1,6 +1,7 @@
 package com.festp.components;
 
 import org.bukkit.Material;
+import org.bukkit.Tag;
 import org.bukkit.entity.Boat;
 import org.bukkit.entity.ChestBoat;
 import org.bukkit.inventory.ItemStack;
@@ -10,7 +11,19 @@ import com.festp.utils.Utils;
 
 public class BoatData
 {
-	private static IBoatDataConverter CONVERTER = getConverter();
+	private static final boolean SUPPORTS_CHEST_AND_MANGROVE = Utils.GetVersion() >= 11900;
+	private static final IBoatDataConverter CONVERTER = getConverter();
+	
+	private static IBoatDataConverter getConverter() {
+		if (SUPPORTS_CHEST_AND_MANGROVE)
+			return new BoatDataConverter1_19();
+		else
+			return new BoatDataConverter1_18();
+	}
+	
+	public static Material[] getSupportedBoats() {
+		return CONVERTER.getSupportedBoats();
+	}
 	
 	Material boatMaterial = Material.OAK_BOAT;
 	boolean hasChest = false;
@@ -53,22 +66,44 @@ public class BoatData
 	public Class<? extends Boat> getBoatClass() {
 		return hasChest ? ChestBoat.class : Boat.class;
 	}
-	
-	private static IBoatDataConverter getConverter() {
-		boolean above1_19 = Utils.GetVersion() >= 11900;
-		if (above1_19)
-			return new BoatDataConverter1_19();
-		else
-			return new BoatDataConverter1_18();
-	}
 
-	public static BoatData fromBoatMaterial(ItemStack stack) {
+	// TODO refactor
+	public static BoatData fromBoatMaterial(Material m) {
 		BoatData res = new BoatData();
-		if (charToMaterial(materialToChar(stack.getType())) != null)
-			res.boatMaterial = stack.getType();
+		res.hasChest = getIsChested(m);
+		m = getChestless(m);
+		if (charToMaterial(materialToChar(m)) != null)
+			res.boatMaterial = m;
 		return res;
 	}
+
+	private static boolean getIsChested(Material m) {
+		if (!SUPPORTS_CHEST_AND_MANGROVE)
+			return false;
+		return Tag.ITEMS_CHEST_BOATS.isTagged(m);
+	}
 	
+	private static Material getChestless(Material m) {
+		if (!SUPPORTS_CHEST_AND_MANGROVE)
+			return m;
+		
+		if (m == Material.ACACIA_CHEST_BOAT)
+			return Material.ACACIA_BOAT;
+		if (m == Material.BIRCH_CHEST_BOAT)
+			return Material.BIRCH_BOAT;
+		if (m == Material.DARK_OAK_CHEST_BOAT)
+			return Material.DARK_OAK_BOAT;
+		if (m == Material.JUNGLE_CHEST_BOAT)
+			return Material.JUNGLE_BOAT;
+		if (m == Material.OAK_CHEST_BOAT)
+			return Material.OAK_BOAT;
+		if (m == Material.SPRUCE_CHEST_BOAT)
+			return Material.SPRUCE_BOAT;
+		if (m == Material.MANGROVE_CHEST_BOAT)
+			return Material.MANGROVE_BOAT;
+		return m;
+	}
+
 	private static char materialToChar(Material material) {
 		if (material == Material.ACACIA_BOAT)
 			return 'a';
@@ -82,8 +117,7 @@ public class BoatData
 			return 'o';
 		if (material == Material.SPRUCE_BOAT)
 			return 's';
-		boolean above1_19 = Utils.GetVersion() >= 11900;
-		if (above1_19) {
+		if (SUPPORTS_CHEST_AND_MANGROVE) {
 			if (material == Material.MANGROVE_BOAT)
 				return 'm';
 		}
@@ -103,8 +137,7 @@ public class BoatData
 			return Material.OAK_BOAT;
 		if (c == 's')
 			return Material.SPRUCE_BOAT;
-		boolean above1_19 = Utils.GetVersion() >= 11900;
-		if (above1_19) {
+		if (SUPPORTS_CHEST_AND_MANGROVE) {
 			if (c == 'm')
 				return Material.MANGROVE_BOAT;
 		}

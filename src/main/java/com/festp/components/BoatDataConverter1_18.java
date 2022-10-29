@@ -42,4 +42,10 @@ public class BoatDataConverter1_18 implements IBoatDataConverter
 		}
 		return null;
 	}
+
+	public Material[] getSupportedBoats() {
+		return new Material[] {
+				Material.ACACIA_BOAT, Material.BIRCH_BOAT, Material.DARK_OAK_BOAT,
+				Material.JUNGLE_BOAT, Material.OAK_BOAT, Material.SPRUCE_BOAT };
+	}
 }

@@ -62,4 +62,12 @@ public class BoatDataConverter1_19 implements IBoatDataConverter
 		default: return null;
 		}
 	}
+
+	public Material[] getSupportedBoats() {
+		return new Material[] {
+				Material.ACACIA_BOAT, Material.BIRCH_BOAT, Material.DARK_OAK_BOAT,
+				Material.JUNGLE_BOAT, Material.OAK_BOAT, Material.SPRUCE_BOAT,
+				Material.MANGROVE_BOAT,
+				};
+	}
 }
