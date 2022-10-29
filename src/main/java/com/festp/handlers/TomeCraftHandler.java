@@ -11,6 +11,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -23,7 +24,6 @@ import com.festp.components.CustomHorseComponent;
 import com.festp.components.HorseComponent;
 import com.festp.components.HorseFormat;
 import com.festp.components.ITomeComponent;
-import com.festp.components.MinecartComponent;
 import com.festp.tome.SummonerTome;
 import com.festp.tome.TomeType;
 import com.festp.utils.Utils;
@@ -31,8 +31,11 @@ import com.festp.utils.UtilsRandom;
 
 public class TomeCraftHandler implements Listener
 {
-	Main plugin;
-	CraftManager craftManager;
+	private Main plugin;
+	private CraftManager craftManager;
+	private Recipe boatRecipe;
+	private Recipe customHorseRecipe;
+	private Recipe combineRecipe;
 	
 	public TomeCraftHandler(Main plugin, CraftManager craftManager)
 	{
@@ -64,6 +67,7 @@ public class TomeCraftHandler implements Listener
     	boatRecipe.addIngredient(3, Material.EXPERIENCE_BOTTLE);
     	boatRecipe.addIngredient(1, Material.BOOK);
     	craftManager.addRecipe(key_boat, boatRecipe);
+    	this.boatRecipe = boatRecipe;
     	
     	ItemStack striderBook = TomeItemHandler.getNewTome(EnumSet.of(TomeType.STRIDER));
     	ShapelessRecipe striderRecipe = new ShapelessRecipe(key_strider, striderBook);
@@ -111,6 +115,7 @@ public class TomeCraftHandler implements Listener
     	customHorseRecipe.addIngredient(1, Material.EXPERIENCE_BOTTLE);
     	customHorseRecipe.addIngredient(horseTomeChoice);
     	craftManager.addRecipe(key_customHorse, customHorseRecipe);
+    	this.customHorseRecipe = customHorseRecipe;
 	}
 	private void getUnitedRecipe(ItemStack[] ingredientTomes)
 	{
@@ -124,19 +129,19 @@ public class TomeCraftHandler implements Listener
     	combineRecipe.addIngredient(1, Material.EXPERIENCE_BOTTLE);
     	combineRecipe.addIngredient(tome2Choice);
     	craftManager.addRecipe(key_combine, combineRecipe);
+    	this.combineRecipe = combineRecipe;
 	}
 
 	/** Sets horse name, manage components */
 	@EventHandler
 	public void onPrepareCraft(PrepareItemCraftEvent event)
 	{
-		// TODO identify the craft(event.getRecipe() == recipe?) and original tomes, fire inner event
 		SummonerTome newType = SummonerTome.getTome(event.getInventory().getResult());
 		if (newType == null) return;
 
 		ItemStack[] matrix = event.getInventory().getMatrix();
 		// upgrade horse to custom horse:   any horse tome + NAME from nametag
-		if (newType.hasComponent(CustomHorseComponent.class))
+		if (event.getRecipe().equals(customHorseRecipe))
 		{
 			String customName = null;
 			boolean correct = true;
@@ -173,6 +178,7 @@ public class TomeCraftHandler implements Listener
 			}
 			
 			if (correct && oldType != null) {
+				// TODO identify original tomes, fire inner event
 				CustomHorseComponent horseComp = new CustomHorseComponent();
 				horseComp.setHorseData(HorseFormat.generate());
 				oldType.replace(HorseComponent.class, horseComp);
@@ -191,9 +197,8 @@ public class TomeCraftHandler implements Listener
 	    	return;
 		}
 		
-		// combined tome recipe result, TODO rework (use event.getRecipe().equals(...))
-		if (newType.hasComponent(MinecartComponent.class)
-				&& newType.hasComponent(BoatComponent.class))
+		// combined tome recipe result
+		if (event.getRecipe().equals(combineRecipe))
 		{
 			boolean correct = true;
 			List<ITomeComponent> tomes = new ArrayList<>();
@@ -252,6 +257,9 @@ public class TomeCraftHandler implements Listener
 	@EventHandler
 	public void onCraft(CraftItemEvent event)
 	{
+		if (!event.getRecipe().equals(boatRecipe))
+			return;
+		
 		ItemStack curResult = event.getInventory().getResult();
 		SummonerTome tome = SummonerTome.getTome(curResult);
 		if (tome == null)
