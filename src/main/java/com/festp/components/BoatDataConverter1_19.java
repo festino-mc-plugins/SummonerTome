@@ -68,6 +68,8 @@ public class BoatDataConverter1_19 implements IBoatDataConverter
 				Material.ACACIA_BOAT, Material.BIRCH_BOAT, Material.DARK_OAK_BOAT,
 				Material.JUNGLE_BOAT, Material.OAK_BOAT, Material.SPRUCE_BOAT,
 				Material.MANGROVE_BOAT,
-				};
+				Material.ACACIA_CHEST_BOAT, Material.BIRCH_CHEST_BOAT, Material.DARK_OAK_CHEST_BOAT,
+				Material.JUNGLE_CHEST_BOAT, Material.OAK_CHEST_BOAT, Material.SPRUCE_CHEST_BOAT,
+				Material.MANGROVE_CHEST_BOAT};
 	}
 }
