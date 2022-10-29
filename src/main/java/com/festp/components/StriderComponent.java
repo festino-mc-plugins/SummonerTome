@@ -11,6 +11,7 @@ import com.festp.utils.Utils;
 public class StriderComponent implements ITomeComponent
 {
 	private static final double LAVA_SEARCHING_RADIUS = 2.5;
+	private static final double SEARCHING_RADIUS = 2.5;
 	public static final char CODE = 's';
 	
 	public char getCode() {
@@ -36,7 +37,10 @@ public class StriderComponent implements ITomeComponent
 	}
 	
 	public Location getSummonLocation(Location playerLoc) {
-		return SummonUtils.tryFindForStrider(playerLoc, LAVA_SEARCHING_RADIUS);
+		Location onLava = SummonUtils.tryFindForStrider(playerLoc.clone(), LAVA_SEARCHING_RADIUS);
+		if (onLava != null)
+			return onLava;
+		return SummonUtils.tryFindForPig(playerLoc, SEARCHING_RADIUS);
 	}
 
 	public Entity summon(Player summoner, Location loc) {
