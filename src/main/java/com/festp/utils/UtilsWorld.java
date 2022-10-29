@@ -1,5 +1,7 @@
 package com.festp.utils;
 
+import java.util.function.Predicate;
+
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -7,7 +9,7 @@ import org.bukkit.block.BlockFace;
 
 public class UtilsWorld
 {
-	public static Location searchBlock(Location loc, Material[] blocks, double horRadius, boolean playerCanFly)
+	public static Location searchBlock(Location loc, Predicate<Block> predicate, double horRadius, boolean playerCanFly)
 	{
 		boolean xPriority = false, zPriority = false;
 		if (getBlockCenterOffset(loc.getX()) > 0) xPriority = true;
@@ -30,20 +32,20 @@ public class UtilsWorld
 							for (int dx : dxPool)
 								for (int dz : dzPool) {
 									foundBlock = start_block.getRelative(dx, dy, dz);
-									if (Utils.contains(blocks, foundBlock.getType()) && (noPlayerCanFly || UtilsType.playerCanFlyOn(foundBlock)))
+									if (predicate.test(foundBlock) && (noPlayerCanFly || UtilsType.playerCanFlyOn(foundBlock)))
 										break searching;
 									foundBlock = start_block.getRelative(dx, -dy, dz);
-									if (Utils.contains(blocks, foundBlock.getType()) && (noPlayerCanFly || UtilsType.playerCanFlyOn(foundBlock)))
+									if (predicate.test(foundBlock) && (noPlayerCanFly || UtilsType.playerCanFlyOn(foundBlock)))
 										break searching;
 								}
 						else
 							for (int dz : dzPool)
 								for (int dx : dxPool) {
 									foundBlock = start_block.getRelative(dx, dy, dz);
-									if (Utils.contains(blocks, foundBlock.getType()) && (noPlayerCanFly || UtilsType.playerCanFlyOn(foundBlock)))
+									if (predicate.test(foundBlock) && (noPlayerCanFly || UtilsType.playerCanFlyOn(foundBlock)))
 										break searching;
 									foundBlock = start_block.getRelative(dx, -dy, dz);
-									if (Utils.contains(blocks, foundBlock.getType()) && (noPlayerCanFly || UtilsType.playerCanFlyOn(foundBlock)))
+									if (predicate.test(foundBlock) && (noPlayerCanFly || UtilsType.playerCanFlyOn(foundBlock)))
 										break searching;
 								}
 					}

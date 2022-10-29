@@ -1,10 +1,12 @@
 package com.festp.utils;
 
 import java.util.UUID;
+import java.util.function.Predicate;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.entity.AbstractHorse;
 import org.bukkit.entity.Boat;
 import org.bukkit.entity.Entity;
@@ -31,21 +33,36 @@ public class SummonUtils
 		{ Material.LAVA };
 	
 	public static Location tryFindForMinecart(Location playerLoc, double horRadius) {
-		return UtilsWorld.searchBlock(playerLoc, MINECART_BLOCKS, horRadius, false);
+		Predicate<Block> predicate = new Predicate<Block>() {
+			@Override
+			public boolean test(Block b) {
+				return Utils.contains(MINECART_BLOCKS, b.getType());
+			}
+		};
+		return UtilsWorld.searchBlock(playerLoc, predicate, horRadius, false);
 	}
 	public static Minecart summonMinecart(Location l, Player p) {
 		Minecart mc = l.getWorld().spawn(l, Minecart.class);
 		mc.addPassenger(p);
+		mc.setVelocity(p.getVelocity());
 		return mc;
 	}
 	
 	public static Location tryFindForStrider(Location playerLoc, double horRadius) {
-		return UtilsWorld.searchBlock(playerLoc.add(0, -1, 0), STRIDER_BLOCKS, horRadius, true);
+		Predicate<Block> predicate = new Predicate<Block>() {
+			@Override
+			public boolean test(Block b) {
+				return Utils.contains(STRIDER_BLOCKS, b.getType());
+			}
+		};
+		return UtilsWorld.searchBlock(playerLoc.add(0, -1, 0), predicate, horRadius, true);
 	}
 	public static Strider summonStrider(Location l, Player p) {
+		l.setDirection(p.getLocation().getDirection());
 		Strider strider = l.getWorld().spawn(l, Strider.class);
 		strider.setSaddle(true);
 		strider.addPassenger(p);
+		strider.setVelocity(p.getVelocity());
 		return strider;
 	}
 	
@@ -70,11 +87,11 @@ public class SummonUtils
 		return res;
 	}
 	public static Boat summonBoat(Location l, Player p, BoatData boatData) {
-		l.setPitch(p.getLocation().getPitch());
-		l.setYaw(p.getLocation().getYaw());
+		l.setDirection(p.getLocation().getDirection());
 		Boat boat = l.getWorld().spawn(l, boatData.getBoatClass());
 		boatData.applyToBoat(boat); // TODO fix flickering (use consumer)
 		boat.addPassenger(p);
+		boat.setVelocity(p.getVelocity());
 		return boat;
 	}
 
@@ -86,10 +103,12 @@ public class SummonUtils
 		return loc;
 	}
 	public static Horse summonHorse(Location l, Player p) {
+		l.setDirection(p.getLocation().getDirection());
 		Horse horse = l.getWorld().spawn(l, Horse.class, (newHorse) ->
 		{
 			initHorse(newHorse, p);
 		});
+		horse.setVelocity(p.getVelocity());
 		return horse;
 	}
 	
