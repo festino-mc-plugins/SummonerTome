@@ -52,12 +52,15 @@ public class CustomHorseComponent implements ITomeComponent
 			oldData.applyToHorse(horse);
 		return true;
 	}
+
+	public boolean canSummon(Player player) {
+		return true;
+	}
 	
 	public Location getSummonLocation(Location playerLoc) {
 		return SummonUtils.tryFindForHorse(playerLoc);
 	}
 
-	@Override
 	public Entity summon(Player summoner, Location loc) {
 		return SummonUtils.summonCustomHorse(loc, summoner, horseData);
 	}

@@ -27,12 +27,15 @@ public class HorseComponent implements ITomeComponent
 	public boolean trySwap(Entity entity) {
 		return false;
 	}
+
+	public boolean canSummon(Player player) {
+		return true;
+	}
 	
 	public Location getSummonLocation(Location playerLoc) {
 		return SummonUtils.tryFindForHorse(playerLoc);
 	}
 
-	@Override
 	public Entity summon(Player summoner, Location loc) {
 		return SummonUtils.summonHorse(loc, summoner);
 	}

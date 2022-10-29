@@ -42,11 +42,14 @@ public class BoatComponent implements ITomeComponent
 		return true;
 	}
 
+	public boolean canSummon(Player player) {
+		return true;
+	}
+	
 	public Location getSummonLocation(Location playerLoc) {
 		return SummonUtils.tryFindForBoat(playerLoc, BOAT_SEARCHING_RADIUS);
 	}
 
-	@Override
 	public Entity summon(Player summoner, Location loc) {
 		return SummonUtils.summonBoat(loc, summoner, boatData);
 	}

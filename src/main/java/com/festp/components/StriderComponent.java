@@ -1,10 +1,12 @@
 package com.festp.components;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
 import com.festp.utils.SummonUtils;
+import com.festp.utils.Utils;
 
 public class StriderComponent implements ITomeComponent
 {
@@ -27,6 +29,10 @@ public class StriderComponent implements ITomeComponent
 
 	public boolean trySwap(Entity entity) {
 		return false;
+	}
+
+	public boolean canSummon(Player player) {
+		return Utils.checkHotbar(player, Material.WARPED_FUNGUS_ON_A_STICK);
 	}
 	
 	public Location getSummonLocation(Location playerLoc) {

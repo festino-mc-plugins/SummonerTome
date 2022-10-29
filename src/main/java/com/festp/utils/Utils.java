@@ -7,7 +7,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.Vector;
 
@@ -111,6 +113,19 @@ public class Utils
 		for (Object m : list)
 			if (m == find)
 				return true;
+		return false;
+	}
+	
+	public static boolean checkHotbar(Player player, Material m) {
+		PlayerInventory inv = player.getInventory();
+		ItemStack item = inv.getItemInOffHand();
+		if (item != null && item.getType() == m)
+			return true;
+		for (int i = 0; i < 9; i++) {
+			item = inv.getItem(i);
+			if (item != null && item.getType() == m)
+				return true;
+		}
 		return false;
 	}
 }

@@ -13,11 +13,13 @@ public interface ITomeComponent
 	public String serialize();
 	public void deserialize(String data);
 	public boolean trySwap(Entity entity);
+	
+	public boolean canSummon(Player player);
 	public Location getSummonLocation(Location playerLoc);
 	public Entity summon(Player summoner, Location loc);
 	
 	/** Sorts components in descending order of priority */
-	public static class ComponentComparator implements Comparator<ITomeComponent> {
+	public static class PriorityComparator implements Comparator<ITomeComponent> {
 		@Override
 		public int compare(ITomeComponent a, ITomeComponent b) {
 			return Integer.compare(b.getPriority(), a.getPriority());

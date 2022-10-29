@@ -48,7 +48,7 @@ public class SummonerTome
 	public Entity trySummon(Player summoner)
 	{
 		Location playerLoc = summoner.getLocation();
-		Arrays.sort(components, new ITomeComponent.ComponentComparator());
+		Arrays.sort(components, new ITomeComponent.PriorityComparator());
 		
 		ITomeComponent resComponent = null;
 		Location curLoc = null;
@@ -58,6 +58,10 @@ public class SummonerTome
 			if (resComponent != null && component.getPriority() != resComponent.getPriority()) {
 				break;
 			}
+			
+			if (!component.canSummon(summoner))
+				continue;
+			
 			Location loc = component.getSummonLocation(playerLoc.clone());
 			if (loc != null && (curLoc == null || playerLoc.distanceSquared(loc) < playerLoc.distanceSquared(curLoc))) {
 				curLoc = loc;
