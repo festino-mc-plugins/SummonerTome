@@ -136,22 +136,6 @@ public class UtilsType
 		return false;
 	}
 	
-	public static boolean isWoodenButton(Material m) {
-		switch(m) {
-		case ACACIA_BUTTON: return true;
-		case BIRCH_BUTTON: return true;
-		case DARK_OAK_BUTTON: return true;
-		case JUNGLE_BUTTON: return true;
-		case OAK_BUTTON: return true;
-		case SPRUCE_BUTTON: return true;
-		case CRIMSON_BUTTON: return true;
-		case WARPED_BUTTON: return true;
-		default: return false;
-		}
-	}
-	public static boolean isButton(Material m) {
-		 return isWoodenButton(m) || m == Material.STONE_BUTTON || m == Material.POLISHED_BLACKSTONE_BUTTON;
-	}
 	public static boolean isGate(Material m) {
 		switch(m) {
 		case ACACIA_FENCE_GATE: return true;
@@ -183,55 +167,6 @@ public class UtilsType
 		return !Tag.FENCES.isTagged(m) && !Tag.STAIRS.isTagged(m)
 				&& m != Material.REDSTONE_ORE && m != Material.PUMPKIN && m != Material.MOVING_PISTON
 				&& m != Material.REDSTONE_WIRE;
-	}
-	
-	public static boolean is_colored_shulker_box(Material m) {
-		switch(m) {
-		case WHITE_SHULKER_BOX: return true;
-		case ORANGE_SHULKER_BOX: return true;
-		case MAGENTA_SHULKER_BOX: return true;
-		case LIGHT_BLUE_SHULKER_BOX: return true;
-		case YELLOW_SHULKER_BOX: return true;
-		case LIME_SHULKER_BOX: return true;
-		case PINK_SHULKER_BOX: return true;
-		case GRAY_SHULKER_BOX: return true;
-		case LIGHT_GRAY_SHULKER_BOX: return true;
-		case CYAN_SHULKER_BOX: return true;
-		case PURPLE_SHULKER_BOX: return true;
-		case BLUE_SHULKER_BOX: return true;
-		case BROWN_SHULKER_BOX: return true;
-		case GREEN_SHULKER_BOX: return true;
-		case RED_SHULKER_BOX: return true;
-		case BLACK_SHULKER_BOX: return true;
-		default: return false;
-		}
-	}
-	
-	public static boolean is_colored_terracotta(Material m) {
-		switch(m) {
-		case WHITE_TERRACOTTA: return true;
-		case ORANGE_TERRACOTTA: return true;
-		case MAGENTA_TERRACOTTA: return true;
-		case LIGHT_BLUE_TERRACOTTA: return true;
-		case YELLOW_TERRACOTTA: return true;
-		case LIME_TERRACOTTA: return true;
-		case PINK_TERRACOTTA: return true;
-		case GRAY_TERRACOTTA: return true;
-		case LIGHT_GRAY_TERRACOTTA: return true;
-		case CYAN_TERRACOTTA: return true;
-		case PURPLE_TERRACOTTA: return true;
-		case BLUE_TERRACOTTA: return true;
-		case BROWN_TERRACOTTA: return true;
-		case GREEN_TERRACOTTA: return true;
-		case RED_TERRACOTTA: return true;
-		case BLACK_TERRACOTTA: return true;
-		default: return false;
-		}
-	}
-	
-	public static boolean is_shulker_box(Material m) {
-		if(is_colored_shulker_box(m) || m.equals(Material.SHULKER_BOX)) return true;
-		return false;
 	}
 
 	public static boolean isHorseArmor(Material m) {
