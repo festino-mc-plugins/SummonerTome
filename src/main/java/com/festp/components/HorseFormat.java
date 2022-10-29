@@ -10,12 +10,14 @@ import org.bukkit.entity.ChestedHorse;
 import org.bukkit.entity.Horse;
 import org.bukkit.entity.Horse.Color;
 import org.bukkit.entity.Horse.Style;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.AbstractHorseInventory;
 import org.bukkit.inventory.ItemStack;
 
 import com.festp.inventory.InventorySerializer;
 import com.festp.utils.SummonUtils;
 import com.festp.utils.Utils;
+import com.festp.utils.UtilsRandom;
 import com.festp.utils.SummonUtils.HorseSetter;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
@@ -178,17 +180,55 @@ public class HorseFormat {
 	}
 	public static HorseFormat generate(Class<? extends AbstractHorse> type)
 	{
+		HorseFormat res = generateBySpawn(type);
+		if (res == null)
+		{
+			res = new HorseFormat();
+			res.type = type;
+			res.maxHealth = UtilsRandom.getInt(15, 30);
+			res.speed = UtilsRandom.getDouble(0.1125, 0.3375);
+			res.jumpStrength = UtilsRandom.getDouble(0.4, 1.0);
+			res.inventory = new ItemStack[1];
+			res.isAdult = true;
+			
+			if (type.isAssignableFrom(Horse.class)) {
+				res.horseColor = UtilsRandom.get(Horse.Color.values());
+				res.horseStyle = UtilsRandom.get(Horse.Style.values());
+			}
+			
+			if (type.isAssignableFrom(ChestedHorse.class)) {
+				res.chestedIsCarrying = false;
+			}
+		}
+		res.inventory[0] = new ItemStack(Material.SADDLE);
+		return res;
+	}
+	private static HorseFormat generateBySpawn(Class<? extends AbstractHorse> type)
+	{
+		Location tempLocation = null;
 		// TODO find any player and spawn above
 		World world = Bukkit.getWorlds().get(0);
-		Location tempLocation = world.getSpawnLocation();
+		if (world != null) {
+			if (world.getKeepSpawnInMemory()) {
+				tempLocation = world.getSpawnLocation();
+			}
+		}
+		if (tempLocation == null) {
+			for (Player p : Bukkit.getOnlinePlayers()) {
+				tempLocation = p.getLocation();
+				break;
+			}
+		}
+		
 		if (tempLocation == null)
-			tempLocation = new Location(world, 0, 64, 0);
+			return null;
 		tempLocation = tempLocation.add(0, 512, 0);
 		
-		// TODO check if spawn can be cancelled
 		AbstractHorse horse = world.spawn(tempLocation, type);
+		if (horse == null)
+			return null;
 		HorseFormat res = HorseFormat.fromHorse(horse);
-		res.inventory[0] = new ItemStack(Material.SADDLE);
+		horse.remove();
 		return res;
 	}
 }
