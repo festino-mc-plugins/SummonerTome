@@ -36,7 +36,7 @@ public class MainCommand  implements CommandExecutor, TabCompleter
 	public MainCommand() {
 		// TODO localization
 		// TODO if 1.15-, remove "strider"
-		enNames = Lists.asList("", new String[] { "minecart", "boat", "horse", "strider", "custom_horse", "all", "custom_all" });
+		enNames = Lists.asList("", new String[] { "minecart", "boat", "strider", "pig", "horse", "custom_horse", "all", "custom_all" });
 	}
 
 	// TODO any combination of vehicles
@@ -51,6 +51,8 @@ public class MainCommand  implements CommandExecutor, TabCompleter
 			item = TomeItemHandler.getNewTome(TomeType.BOAT);
 		} else if (name.equalsIgnoreCase("strider")) {
 			item = TomeItemHandler.getNewTome(TomeType.STRIDER);
+		} else if (name.equalsIgnoreCase("pig")) {
+			item = TomeItemHandler.getNewTome(TomeType.PIG);
 		} else if (name.equalsIgnoreCase("horse")) {
 			item = TomeItemHandler.getNewTome(TomeType.HORSE);
 		} else if (name.equalsIgnoreCase("custom_horse")) {

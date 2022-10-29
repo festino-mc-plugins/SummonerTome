@@ -7,13 +7,14 @@ import com.festp.components.CustomHorseComponent;
 import com.festp.components.HorseComponent;
 import com.festp.components.ITomeComponent;
 import com.festp.components.MinecartComponent;
+import com.festp.components.PigComponent;
 import com.festp.components.StriderComponent;
 
 // TODO check if a new component was added :D
 // or use reflection?
 public enum TomeType
 {
-	MINECART, BOAT, HORSE, CUSTOM_HORSE, STRIDER;
+	MINECART, BOAT, HORSE, CUSTOM_HORSE, STRIDER, PIG;
 	
 	public ITomeComponent getComponent()
 	{
@@ -28,6 +29,8 @@ public enum TomeType
 			return new CustomHorseComponent();
 		case STRIDER:
 			return new StriderComponent();
+		case PIG:
+			return new PigComponent();
 		default:
 			return null;
 		}
@@ -45,6 +48,8 @@ public enum TomeType
 			return CustomHorseComponent.class;
 		case STRIDER:
 			return StriderComponent.class;
+		case PIG:
+			return PigComponent.class;
 		default:
 			return null;
 		}
@@ -62,6 +67,8 @@ public enum TomeType
 			return CUSTOM_HORSE;
 		if (componentCode == StriderComponent.CODE)
 			return STRIDER;
+		if (componentCode == PigComponent.CODE)
+			return PIG;
 		throw new IllegalArgumentException("Unknown component code. Try install new versions of the plugin.");
 	}
 

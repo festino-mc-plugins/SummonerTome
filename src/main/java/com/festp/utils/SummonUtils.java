@@ -12,6 +12,7 @@ import org.bukkit.entity.Boat;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Horse;
 import org.bukkit.entity.Minecart;
+import org.bukkit.entity.Pig;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Strider;
 import org.bukkit.inventory.ItemStack;
@@ -64,6 +65,24 @@ public class SummonUtils
 		strider.addPassenger(p);
 		strider.setVelocity(p.getVelocity());
 		return strider;
+	}
+	
+	public static Location tryFindForPig(Location playerLoc, double horRadius) {
+		Predicate<Block> predicate = new Predicate<Block>() {
+			@Override
+			public boolean test(Block b) {
+				return UtilsType.playerCanStayIn(b);
+			}
+		};
+		return UtilsWorld.searchBlock(playerLoc.add(0, -1, 0), predicate, horRadius, false);
+	}
+	public static Pig summonPig(Location l, Player p) {
+		l.setDirection(p.getLocation().getDirection());
+		Pig pig = l.getWorld().spawn(l, Pig.class);
+		pig.setSaddle(true);
+		pig.addPassenger(p);
+		pig.setVelocity(p.getVelocity());
+		return pig;
 	}
 	
 	public static Location tryFindForBoat(Location loc, double horRadius) {
