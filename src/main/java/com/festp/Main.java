@@ -6,7 +6,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.festp.commands.MainCommand;
 import com.festp.handlers.TomeClickHandler;
-import com.festp.handlers.TomeCraftHandler;
 import com.festp.handlers.TomeEntityHandler;
 import com.festp.handlers.TomeInventoryHandler;
 import com.festp.utils.NBTUtils;
@@ -24,21 +23,18 @@ public class Main extends JavaPlugin
     	NBTUtils.setPlugin(this);
 		
     	craftManager = new CraftManager(this, getServer());
+    	craftManager.registerEvents(pm);
+    	craftManager.addCrafts();
     	
     	MainCommand command = new MainCommand();
     	getCommand(MainCommand.COMMAND).setExecutor(command);
     	
-    	TomeCraftHandler craftHandler = new TomeCraftHandler();
-    	pm.registerEvents(craftHandler, this);
     	TomeClickHandler clickHandler = new TomeClickHandler();
     	pm.registerEvents(clickHandler, this);
     	TomeInventoryHandler inventoryHandler = new TomeInventoryHandler();
     	pm.registerEvents(inventoryHandler, this);
     	TomeEntityHandler entityHandler = new TomeEntityHandler();
     	pm.registerEvents(entityHandler, this);
-    	
-    	craftManager.addCrafts();
-    	pm.registerEvents(craftManager, this);
     	
 		Bukkit.getScheduler().scheduleSyncRepeatingTask(this,
 			new Runnable() {

@@ -14,11 +14,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.PotionMeta;
-import org.bukkit.potion.PotionData;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
-import org.bukkit.potion.PotionType;
 
 import com.festp.CraftManager;
 import com.festp.Main;
@@ -36,103 +31,83 @@ import com.festp.utils.UtilsRandom;
 
 public class TomeCraftHandler implements Listener
 {
-	public static void addTomeCrafts(Main plugin, CraftManager craftManager)
+	Main plugin;
+	CraftManager craftManager;
+	
+	public TomeCraftHandler(Main plugin, CraftManager craftManager)
+	{
+		this.plugin = plugin;
+		this.craftManager = craftManager;
+	}
+	
+	public void addTomeCrafts()
 	{
     	NamespacedKey key_minecart = new NamespacedKey(plugin, "minecart_tome");
     	NamespacedKey key_boat = new NamespacedKey(plugin, "boat_tome");
     	NamespacedKey key_horse = new NamespacedKey(plugin, "horse_tome");
-    	NamespacedKey key_custom_horse = new NamespacedKey(plugin, "make_custom_horse_tome"); // for both 'custom horse' and 'custom all'
-    	NamespacedKey key_all = new NamespacedKey(plugin, "make_all_tome"); // for both 'all' and 'custom all'
 		
-		// minecart tome - book, 4 xp bottle and 4 minecarts
-    	ItemStack minecart_book = TomeItemHandler.getNewTome(EnumSet.of(TomeType.MINECART));
-    	ShapelessRecipe minecart_tome = new ShapelessRecipe(key_minecart, minecart_book);
-    	minecart_tome.addIngredient(1, Material.BOOK);
-    	minecart_tome.addIngredient(4, Material.EXPERIENCE_BOTTLE);
-    	minecart_tome.addIngredient(4, Material.MINECART);
-    	craftManager.addRecipe(key_minecart, minecart_tome);
+    	ItemStack minecartBook = TomeItemHandler.getNewTome(EnumSet.of(TomeType.MINECART));
+    	ShapelessRecipe minecartRecipe = new ShapelessRecipe(key_minecart, minecartBook);
+    	minecartRecipe.addIngredient(3, Material.MINECART);
+    	minecartRecipe.addIngredient(3, Material.EXPERIENCE_BOTTLE);
+    	minecartRecipe.addIngredient(1, Material.BOOK);
+    	craftManager.addRecipe(key_minecart, minecartRecipe);
 		
-		// boat tome - book, 2 xp bottle and 6 colors boats
     	// all tomes with boats can be customized by all the 6 boat types
-    	ItemStack boat_book = TomeItemHandler.getNewTome(EnumSet.of(TomeType.BOAT));
-    	ShapelessRecipe boat_tome = new ShapelessRecipe(key_boat, boat_book);
+    	ItemStack boatBook = TomeItemHandler.getNewTome(EnumSet.of(TomeType.BOAT));
+    	ShapelessRecipe boatRecipe = new ShapelessRecipe(key_boat, boatBook);
     	RecipeChoice.MaterialChoice boatChoice = new RecipeChoice.MaterialChoice(BoatData.getSupportedBoats());
-    	boat_tome.addIngredient(1, Material.BOOK);
-    	boat_tome.addIngredient(2, Material.EXPERIENCE_BOTTLE);
-    	boat_tome.addIngredient(boatChoice);
-    	boat_tome.addIngredient(boatChoice);
-    	boat_tome.addIngredient(boatChoice);
-    	boat_tome.addIngredient(boatChoice);
-    	boat_tome.addIngredient(boatChoice);
-    	boat_tome.addIngredient(boatChoice);
-    	craftManager.addRecipe(key_boat, boat_tome);
+    	boatRecipe.addIngredient(boatChoice);
+    	boatRecipe.addIngredient(boatChoice);
+    	boatRecipe.addIngredient(boatChoice);
+    	boatRecipe.addIngredient(3, Material.EXPERIENCE_BOTTLE);
+    	boatRecipe.addIngredient(1, Material.BOOK);
+    	craftManager.addRecipe(key_boat, boatRecipe);
     	
-		// horse tome - book, 2 xp bottles, 4 saddles, 2 (leads?)
     	// unwearable armor, untakeable saddle
-    	ItemStack horse_book = TomeItemHandler.getNewTome(EnumSet.of(TomeType.HORSE));
-    	ShapelessRecipe horse_tome = new ShapelessRecipe(key_horse, horse_book);
-    	horse_tome.addIngredient(1, Material.BOOK);
-    	horse_tome.addIngredient(2, Material.EXPERIENCE_BOTTLE);
-    	horse_tome.addIngredient(2, Material.LEAD);
-    	horse_tome.addIngredient(2, Material.SADDLE);
-    	horse_tome.addIngredient(1, Material.APPLE);
-    	horse_tome.addIngredient(1, Material.GOLDEN_APPLE);
-    	craftManager.addRecipe(key_horse, horse_tome);
+    	ItemStack horseBook = TomeItemHandler.getNewTome(EnumSet.of(TomeType.HORSE));
+    	ShapelessRecipe horseRecipe = new ShapelessRecipe(key_horse, horseBook);
+    	horseRecipe.addIngredient(1, Material.SADDLE);
+    	horseRecipe.addIngredient(1, Material.LEATHER);
+    	horseRecipe.addIngredient(1, Material.APPLE);
+    	horseRecipe.addIngredient(3, Material.EXPERIENCE_BOTTLE);
+    	horseRecipe.addIngredient(1, Material.BOOK);
+    	craftManager.addRecipe(key_horse, horseRecipe);
     	
-    	RecipeChoice.ExactChoice minecart_choice = new RecipeChoice.ExactChoice(minecart_book);
-    	RecipeChoice.ExactChoice boat_choice = new RecipeChoice.ExactChoice(boat_book);
-    	RecipeChoice.ExactChoice horse_choice = new RecipeChoice.ExactChoice(horse_book);
+    	getCustomHorseRecipe(horseBook);
+    	getUnitedRecipe(new ItemStack[] { minecartBook, boatBook });
+    	// TODO create personal recipes (when player gets or loses tome)
+	}
+	
+	private void getCustomHorseRecipe(ItemStack horseBook)
+	{
+    	NamespacedKey key_customHorse = new NamespacedKey(plugin, "make_custom_horse_tome");
+    	RecipeChoice.ExactChoice horseTomeChoice = new RecipeChoice.ExactChoice(horseBook);
     	
-		// custom horse tome - horse tome, 4 xp bottles, jump potion, speed potion, instheal potion, label
-    	// in craft events because of Horse tome and potions
-    	ItemStack custom_horse_book = TomeItemHandler.getNewTome(EnumSet.of(TomeType.CUSTOM_HORSE));
-    	ShapelessRecipe custom_horse_tome = new ShapelessRecipe(key_custom_horse, custom_horse_book);
-    	custom_horse_tome.addIngredient(4, Material.EXPERIENCE_BOTTLE);
-    	custom_horse_tome.addIngredient(1, Material.NAME_TAG);
+    	// in craft events because of Horse tome
+    	ItemStack customHorseBook = TomeItemHandler.getNewTome(EnumSet.of(TomeType.CUSTOM_HORSE));
+    	ShapelessRecipe customHorseRecipe = new ShapelessRecipe(key_customHorse, customHorseBook);
+    	customHorseRecipe.addIngredient(1, Material.NAME_TAG);
+    	customHorseRecipe.addIngredient(1, Material.GOLDEN_APPLE);
+    	customHorseRecipe.addIngredient(1, Material.EXPERIENCE_BOTTLE);
+    	customHorseRecipe.addIngredient(horseTomeChoice);
+    	craftManager.addRecipe(key_customHorse, customHorseRecipe);
+	}
+	private void getUnitedRecipe(ItemStack[] ingredientTomes)
+	{
+    	NamespacedKey key_combine = new NamespacedKey(plugin, "make_combined_tome");
+    	RecipeChoice.ExactChoice tome1Choice = new RecipeChoice.ExactChoice(ingredientTomes[0]);
+    	RecipeChoice.ExactChoice tome2Choice = new RecipeChoice.ExactChoice(ingredientTomes[1]);
     	
-    	ItemStack heal_potion = new ItemStack(Material.POTION);
-    	PotionMeta p_meta = (PotionMeta)heal_potion.getItemMeta();
-    	p_meta.setBasePotionData(new PotionData(PotionType.INSTANT_HEAL));
-    	heal_potion.setItemMeta(p_meta);
-    	ItemStack speed_potion = new ItemStack(Material.POTION);
-    	p_meta = (PotionMeta)speed_potion.getItemMeta();
-    	p_meta.setBasePotionData(new PotionData(PotionType.SPEED));
-    	speed_potion.setItemMeta(p_meta);
-    	ItemStack jump_potion = new ItemStack(Material.POTION);
-    	p_meta = (PotionMeta)jump_potion.getItemMeta();
-    	p_meta.setBasePotionData(new PotionData(PotionType.JUMP));
-    	jump_potion.setItemMeta(p_meta);
-    	RecipeChoice.ExactChoice heal_choice = new RecipeChoice.ExactChoice(heal_potion);
-    	RecipeChoice.ExactChoice speed_choice = new RecipeChoice.ExactChoice(speed_potion);
-    	RecipeChoice.ExactChoice jump_choice = new RecipeChoice.ExactChoice(jump_potion);
-    	custom_horse_tome.addIngredient(heal_choice);
-    	custom_horse_tome.addIngredient(speed_choice);
-    	custom_horse_tome.addIngredient(jump_choice);
-    	//custom_horse_tome.addIngredient(1, Material.ENCHANTED_BOOK);
-    	custom_horse_tome.addIngredient(horse_choice);
-    	craftManager.addRecipe(key_custom_horse, custom_horse_tome);
-    	
-    	//RecipeChoice.ExactChoice custom_horse_choice = new RecipeChoice.ExactChoice(custom_horse_book);
-		
-		// united tome - horse, minecart, boat tomes, slime block, 5 xp bottles
-    	ItemStack all_book = TomeItemHandler.getNewTome(EnumSet.of(TomeType.MINECART, TomeType.BOAT, TomeType.HORSE));
-    	ShapelessRecipe all_tome = new ShapelessRecipe(key_all, all_book);
-    	//all_tome.addIngredient(3, Material.ENCHANTED_BOOK);
-    	all_tome.addIngredient(minecart_choice);
-    	all_tome.addIngredient(boat_choice);
-    	all_tome.addIngredient(horse_choice);
-    	all_tome.addIngredient(5, Material.EXPERIENCE_BOTTLE);
-    	all_tome.addIngredient(1, Material.SLIME_BLOCK);
-    	craftManager.addRecipe(key_all, all_tome);
-    	
-    	// united custom tome - slime block, custom horse, minecart, boat tomes, 5 xp bottles
-    	// from custom horse, boat and minecart tomes
-    	//craftManager.addRecipe(key_custom_all_h, minecart_tome);
-    	// from united tome
-    	//craftManager.addRecipe(key_custom_all_a, minecart_tome);
+    	ItemStack combinedBook = TomeItemHandler.getNewTome(EnumSet.of(TomeType.MINECART, TomeType.BOAT));
+    	ShapelessRecipe combineRecipe = new ShapelessRecipe(key_combine, combinedBook);
+    	combineRecipe.addIngredient(tome1Choice);
+    	combineRecipe.addIngredient(1, Material.EXPERIENCE_BOTTLE);
+    	combineRecipe.addIngredient(tome2Choice);
+    	craftManager.addRecipe(key_combine, combineRecipe);
 	}
 
-	/** Sets horse name and lets spigot use custom potions */
+	/** Sets horse name, manage components */
 	@EventHandler
 	public void onPrepareCraft(PrepareItemCraftEvent event)
 	{
@@ -141,58 +116,24 @@ public class TomeCraftHandler implements Listener
 		if (newType == null) return;
 
 		ItemStack[] matrix = event.getInventory().getMatrix();
-		// upgrade horse to custom horse:   horse/all tome + NAME from nametag + jump, speed and instheal potions
+		// upgrade horse to custom horse:   any horse tome + NAME from nametag
 		if (newType.hasComponent(CustomHorseComponent.class))
 		{
 			String customName = null;
 			boolean correct = true;
-			boolean hasSpeed = false, hasJump = false, hasHeal = false;
 			ItemStack oldTome = null;
 			SummonerTome oldType = null;
-			int bookCount = 1;
+			int bookCount = 0;
 			for (int i = 0; i < matrix.length; i++)
 			{
-				if (!correct) break;
+				if (!correct)
+					break;
+				if (matrix[i] == null)
+					continue;
+				
 				if (matrix[i].getType() == Material.NAME_TAG) {
 					if (matrix[i].getItemMeta().hasDisplayName()) {
 						customName = matrix[i].getItemMeta().getDisplayName();
-					}
-				}
-				else if (matrix[i].getType() == Material.POTION) {
-					PotionMeta potion = (PotionMeta) matrix[i].getItemMeta();
-					List<PotionEffect> effectList;
-					if (potion.hasCustomEffects())
-						effectList = potion.getCustomEffects();
-					else
-						effectList = new ArrayList<>();
-					PotionData pd = potion.getBasePotionData();
-					PotionEffect pet = pd.getType().getEffectType().createEffect(1, 1);
-					effectList.add(pet);
-					for (PotionEffect pe : effectList) {
-						if (pe.getType() == PotionEffectType.SPEED)
-							if (hasSpeed) {
-								correct = false;
-								break;
-							}
-							else {
-								hasSpeed = true;
-							}
-						else if (pe.getType() == PotionEffectType.JUMP)
-							if (hasJump) {
-								correct = false;
-								break;
-							}
-							else {
-								hasJump = true;
-							}
-						else if (pe.getType() == PotionEffectType.HEAL)
-							if (hasHeal) {
-								correct = false;
-								break;
-							}
-							else {
-								hasHeal = true;
-							}
 					}
 				}
 				else if (matrix[i].getType() == Material.ENCHANTED_BOOK) {
@@ -212,17 +153,18 @@ public class TomeCraftHandler implements Listener
 				}
 			}
 			
-			if (correct && oldType != null && hasHeal && hasJump && hasSpeed) {
+			if (correct && oldType != null) {
 				CustomHorseComponent horseComp = new CustomHorseComponent();
 				horseComp.setHorseData(HorseFormat.generate());
 				oldType.replace(HorseComponent.class, horseComp);
-				ItemStack tome = TomeItemHandler.applyTome(oldTome, oldType);
+				ItemStack newTome = new ItemStack(oldTome);
+				newTome = TomeItemHandler.applyTome(newTome, oldType);
 				if (customName != null) {
-					ItemMeta meta = tome.getItemMeta();
+					ItemMeta meta = newTome.getItemMeta();
 					meta.setDisplayName(customName);
-					tome.setItemMeta(meta);
+					newTome.setItemMeta(meta);
 				}
-		    	event.getInventory().setResult(tome);
+		    	event.getInventory().setResult(newTome);
 			}
 			else {
 				event.getInventory().setResult(null);
@@ -230,15 +172,17 @@ public class TomeCraftHandler implements Listener
 	    	return;
 		}
 		
-		// combine minecart + boat + (any) horse
+		// combined tome recipe result, TODO rework (use event.getRecipe().equals(...))
 		if (newType.hasComponent(MinecartComponent.class)
-				&& newType.hasComponent(BoatComponent.class)
-				&& newType.hasComponent(HorseComponent.class))
+				&& newType.hasComponent(BoatComponent.class))
 		{
 			boolean correct = true;
-			ITomeComponent mcTome = null, boatTome = null, horseTome = null;
+			List<ITomeComponent> tomes = new ArrayList<>();
 			for (int i = 0; i < matrix.length; i++)
 			{
+				if (matrix[i] == null)
+					continue;
+				
 				if (matrix[i].getType() == Material.ENCHANTED_BOOK)
 				{
 					SummonerTome oldType = SummonerTome.getTome(matrix[i]);
@@ -247,37 +191,23 @@ public class TomeCraftHandler implements Listener
 						break;
 					}
 					
-					ITomeComponent comp = oldType.getComponents()[0];
-					if (comp instanceof MinecartComponent) {
-						if (mcTome != null) {
-							correct = false;
-							break;
-						}
-						mcTome = comp;
-					}
-					else if (comp instanceof BoatComponent) {
-						if (boatTome != null) {
-							correct = false;
-							break;
-						}
-						boatTome = comp;
-					}
-					else if (comp instanceof HorseComponent || comp instanceof CustomHorseComponent) {
-						if (horseTome != null) {
-							correct = false;
-							break;
-						}
-						horseTome = comp;
-					}
-					else {
-						correct = false;
+					for (ITomeComponent compNew : oldType.getComponents())
+						for (ITomeComponent compExisting : tomes)
+							if (!isCompatible(compExisting, compNew))
+							{
+								correct = false;
+								break;
+							}
+					if (!correct)
 						break;
-					}
+					
+					for (ITomeComponent compNew : oldType.getComponents())
+						tomes.add(compNew);
 				}
 			}
 			
-			if (correct && mcTome != null && boatTome != null && horseTome != null) {
-				SummonerTome combinedTome = new SummonerTome(new ITomeComponent[] { mcTome, boatTome, horseTome });
+			if (correct) {
+				SummonerTome combinedTome = new SummonerTome(tomes.toArray(new ITomeComponent[0]));
 		    	ItemStack tome = new ItemStack(Material.ENCHANTED_BOOK);
 		    	tome = TomeItemHandler.applyTome(tome, combinedTome);
 		    	event.getInventory().setResult(tome);
@@ -287,6 +217,16 @@ public class TomeCraftHandler implements Listener
 			}
 	    	return;
 		}
+	}
+	
+	// TODO scalable system (may be ITomeComponent#isCompatible(ITomeComponent)) 
+	public boolean isCompatible(ITomeComponent comp1, ITomeComponent comp2)
+	{
+		if (comp1.getClass() == comp2.getClass())
+			return false;
+		boolean horseComp1 = comp1 instanceof HorseComponent || comp1 instanceof CustomHorseComponent;
+		boolean horseComp2 = comp2 instanceof HorseComponent || comp2 instanceof CustomHorseComponent;
+		return !(horseComp1 && horseComp2);
 	}
 
 	/** Sets boat type */
@@ -306,6 +246,9 @@ public class TomeCraftHandler implements Listener
 			Material boatMaterial = Material.OAK_BOAT;
 			// choose any of the boats with equal probability
 			for (ItemStack item : event.getInventory().getMatrix()) {
+				if (item == null)
+					continue;
+				
 				if (Utils.contains(BoatData.getSupportedBoats(), item.getType())) {
 					count++;
 					if (UtilsRandom.getDouble() < 1.0 / count)

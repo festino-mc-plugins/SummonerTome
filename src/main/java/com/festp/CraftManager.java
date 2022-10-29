@@ -10,6 +10,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.Recipe;
+import org.bukkit.plugin.PluginManager;
 
 import com.festp.handlers.TomeCraftHandler;
 
@@ -18,16 +19,23 @@ public class CraftManager implements Listener {
 	
 	Server server;
 	Main plugin;
+	TomeCraftHandler craftHandler;
 	
 	List<NamespacedKey> recipeKeys = new ArrayList<>();
 	
 	public CraftManager(Main plugin, Server server) {
 		this.plugin = plugin;
 		this.server = server;
+    	this.craftHandler = new TomeCraftHandler(plugin, this);
+	}
+
+	public void registerEvents(PluginManager pm) {
+    	pm.registerEvents(this, plugin);
+    	pm.registerEvents(craftHandler, plugin);
 	}
 	
 	public void addCrafts() {
-		TomeCraftHandler.addTomeCrafts(plugin, this);
+		craftHandler.addTomeCrafts();
 	}
 	private void giveRecipe(HumanEntity player, NamespacedKey key) {
 		player.discoverRecipe(key);
