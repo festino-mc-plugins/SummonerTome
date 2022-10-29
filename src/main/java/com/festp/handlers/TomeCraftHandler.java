@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.EventHandler;
@@ -115,7 +116,7 @@ public class TomeCraftHandler implements Listener
     	customHorseRecipe.addIngredient(1, Material.EXPERIENCE_BOTTLE);
     	customHorseRecipe.addIngredient(horseTomeChoice);
     	craftManager.addRecipe(key_customHorse, customHorseRecipe);
-    	this.customHorseRecipe = customHorseRecipe;
+    	this.customHorseRecipe = Bukkit.getRecipe(key_customHorse);
 	}
 	private void getUnitedRecipe(ItemStack[] ingredientTomes)
 	{
@@ -129,7 +130,7 @@ public class TomeCraftHandler implements Listener
     	combineRecipe.addIngredient(1, Material.EXPERIENCE_BOTTLE);
     	combineRecipe.addIngredient(tome2Choice);
     	craftManager.addRecipe(key_combine, combineRecipe);
-    	this.combineRecipe = combineRecipe;
+    	this.combineRecipe = Bukkit.getRecipe(key_combine);
 	}
 
 	/** Sets horse name, manage components */
@@ -141,7 +142,7 @@ public class TomeCraftHandler implements Listener
 
 		ItemStack[] matrix = event.getInventory().getMatrix();
 		// upgrade horse to custom horse:   any horse tome + NAME from nametag
-		if (event.getRecipe().equals(customHorseRecipe))
+		if (isEqual(event.getRecipe(), customHorseRecipe))
 		{
 			String customName = null;
 			boolean correct = true;
@@ -198,7 +199,7 @@ public class TomeCraftHandler implements Listener
 		}
 		
 		// combined tome recipe result
-		if (event.getRecipe().equals(combineRecipe))
+		if (isEqual(event.getRecipe(), combineRecipe))
 		{
 			boolean correct = true;
 			List<ITomeComponent> tomes = new ArrayList<>();
@@ -251,6 +252,13 @@ public class TomeCraftHandler implements Listener
 		boolean horseComp1 = comp1 instanceof HorseComponent || comp1 instanceof CustomHorseComponent;
 		boolean horseComp2 = comp2 instanceof HorseComponent || comp2 instanceof CustomHorseComponent;
 		return !(horseComp1 && horseComp2);
+	}
+	
+	// TODO new comparing method; Bukkit creates a new recipe every time; no .getKey()?
+	/** Compares ONLY the results */
+	private static boolean isEqual(Recipe recipe1, Recipe recipe2) {
+		//System.out.println(recipe1 + " " + recipe2 + " " + recipe1.equals(recipe2) + " " + (recipe1 == recipe2));
+		return recipe1.getResult().equals(recipe2.getResult());
 	}
 
 	/** Sets boat type */
