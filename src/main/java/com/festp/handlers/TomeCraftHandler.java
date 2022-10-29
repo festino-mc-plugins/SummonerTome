@@ -44,6 +44,8 @@ public class TomeCraftHandler implements Listener
 	{
     	NamespacedKey key_minecart = new NamespacedKey(plugin, "minecart_tome");
     	NamespacedKey key_boat = new NamespacedKey(plugin, "boat_tome");
+    	NamespacedKey key_strider = new NamespacedKey(plugin, "strider_tome");
+    	NamespacedKey key_pig = new NamespacedKey(plugin, "pig_tome");
     	NamespacedKey key_horse = new NamespacedKey(plugin, "horse_tome");
 		
     	ItemStack minecartBook = TomeItemHandler.getNewTome(EnumSet.of(TomeType.MINECART));
@@ -53,7 +55,6 @@ public class TomeCraftHandler implements Listener
     	minecartRecipe.addIngredient(1, Material.BOOK);
     	craftManager.addRecipe(key_minecart, minecartRecipe);
 		
-    	// all tomes with boats can be customized by all the 6 boat types
     	ItemStack boatBook = TomeItemHandler.getNewTome(EnumSet.of(TomeType.BOAT));
     	ShapelessRecipe boatRecipe = new ShapelessRecipe(key_boat, boatBook);
     	RecipeChoice.MaterialChoice boatChoice = new RecipeChoice.MaterialChoice(BoatData.getSupportedBoats());
@@ -63,6 +64,24 @@ public class TomeCraftHandler implements Listener
     	boatRecipe.addIngredient(3, Material.EXPERIENCE_BOTTLE);
     	boatRecipe.addIngredient(1, Material.BOOK);
     	craftManager.addRecipe(key_boat, boatRecipe);
+    	
+    	ItemStack striderBook = TomeItemHandler.getNewTome(EnumSet.of(TomeType.STRIDER));
+    	ShapelessRecipe striderRecipe = new ShapelessRecipe(key_strider, striderBook);
+    	striderRecipe.addIngredient(1, Material.SADDLE);
+    	striderRecipe.addIngredient(1, Material.LAVA_BUCKET);
+    	striderRecipe.addIngredient(1, Material.WARPED_FUNGUS);
+    	striderRecipe.addIngredient(3, Material.EXPERIENCE_BOTTLE);
+    	striderRecipe.addIngredient(1, Material.BOOK);
+    	craftManager.addRecipe(key_strider, striderRecipe);
+    	
+    	ItemStack pigBook = TomeItemHandler.getNewTome(EnumSet.of(TomeType.PIG));
+    	ShapelessRecipe pigRecipe = new ShapelessRecipe(key_pig, pigBook);
+    	pigRecipe.addIngredient(1, Material.SADDLE);
+    	pigRecipe.addIngredient(1, Material.PORKCHOP);
+    	pigRecipe.addIngredient(1, Material.CARROT);
+    	pigRecipe.addIngredient(3, Material.EXPERIENCE_BOTTLE);
+    	pigRecipe.addIngredient(1, Material.BOOK);
+    	craftManager.addRecipe(key_pig, pigRecipe);
     	
     	// unwearable armor, untakeable saddle
     	ItemStack horseBook = TomeItemHandler.getNewTome(EnumSet.of(TomeType.HORSE));
