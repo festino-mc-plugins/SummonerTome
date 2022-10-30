@@ -9,51 +9,49 @@ import org.bukkit.block.BlockFace;
 
 public class UtilsWorld
 {
-	public static Location searchBlock(Location loc, Predicate<Block> predicate, double horRadius, boolean playerCanFly)
+	public static Location searchBlock(Location loc, Predicate<Block> predicate, double horRadius)
 	{
-		boolean xPriority = false, zPriority = false;
-		if (getBlockCenterOffset(loc.getX()) > 0) xPriority = true;
-		if (getBlockCenterOffset(loc.getZ()) > 0) zPriority = true;
-		boolean xPriorierZ = true;
-		if (Math.abs(getBlockCenterOffset(loc.getX())) < Math.abs(getBlockCenterOffset(loc.getZ())))
-			xPriorierZ = false;
+		double locX = getBlockCenterOffset(loc.getX());
+		double locZ = getBlockCenterOffset(loc.getZ());
 		Block start_block = loc.getBlock();
+		int radius = (int)Math.ceil(horRadius);
+		int horRadiusSquared = (int) Math.ceil(horRadius * horRadius);
+		int width = radius * 2 + 1;
+		int vertRadius = 0;
+		int height = vertRadius * 2 + 1;
+		boolean[][][] grid = new boolean[width][height][width];
+		Block b;
+		for (int dz = -radius; dz <= radius; dz++)
+			for (int dy = -vertRadius; dy <= vertRadius; dy++)
+				for (int dx = -radius; dx <= radius; dx++)
+				{
+					if (dx * dx + dz * dz >= horRadiusSquared)
+						continue;
+					b = start_block.getRelative(dx, dy, dz);
+					grid[dx + radius][dy + vertRadius][dz + radius] = predicate.test(b);
+				}
 		Block foundBlock = null;
-		boolean noPlayerCanFly = !playerCanFly;
-		searching :
-		{
-			for (int r = 0; r <= 1.1 * horRadius; r++) {
-				for (int dy = 0; dy <= r / 2; dy++) {
-					int temp = r - dy;
-					for (int d = 0; d <= temp; d++) {
-						int[] dxPool = (xPriority ? new int[] {    d,    -d} : new int[] {   -d,     d}),
-							  dzPool = (zPriority ? new int[] {r - d, d - r} : new int[] {d - r, r - d});
-						if (xPriorierZ)  //low dependency on priority
-							for (int dx : dxPool)
-								for (int dz : dzPool) {
-									foundBlock = start_block.getRelative(dx, dy, dz);
-									if (predicate.test(foundBlock) && (noPlayerCanFly || UtilsType.playerCanFlyOn(foundBlock)))
-										break searching;
-									foundBlock = start_block.getRelative(dx, -dy, dz);
-									if (predicate.test(foundBlock) && (noPlayerCanFly || UtilsType.playerCanFlyOn(foundBlock)))
-										break searching;
-								}
-						else
-							for (int dz : dzPool)
-								for (int dx : dxPool) {
-									foundBlock = start_block.getRelative(dx, dy, dz);
-									if (predicate.test(foundBlock) && (noPlayerCanFly || UtilsType.playerCanFlyOn(foundBlock)))
-										break searching;
-									foundBlock = start_block.getRelative(dx, -dy, dz);
-									if (predicate.test(foundBlock) && (noPlayerCanFly || UtilsType.playerCanFlyOn(foundBlock)))
-										break searching;
-								}
+		double distSquared = horRadiusSquared;
+		for (int dz = -radius; dz <= radius; dz++)
+			for (int dy = -vertRadius; dy <= vertRadius; dy++)
+				for (int dx = -radius; dx <= radius; dx++)
+				{
+					int x = dx + radius;
+					int y = dy + vertRadius;
+					int z = dz + radius;
+					if (!grid[x][y][z])
+						continue;
+					double xDist = locX - dx;
+					double zDist = locZ - dz;
+					double dist2 = xDist * xDist + zDist * zDist;
+					if (dist2 < distSquared) {
+						foundBlock = start_block.getRelative(dx, dy, dz);
+						distSquared = dist2;
 					}
 				}
-			}
+		if (foundBlock == null)
 			return null;
-		}
-		return foundBlock.getLocation().add(0.5, 0.5, 0.5);
+		return foundBlock.getLocation().add(0.5, 0, 0.5);
 	}
 	
 	/** Checks 2x2 area for 3x2x3 clear area and specific block under the center */

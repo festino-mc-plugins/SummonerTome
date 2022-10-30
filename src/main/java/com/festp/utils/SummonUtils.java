@@ -40,7 +40,7 @@ public class SummonUtils
 				return Utils.contains(MINECART_BLOCKS, b.getType());
 			}
 		};
-		return UtilsWorld.searchBlock(playerLoc, predicate, horRadius, false);
+		return UtilsWorld.searchBlock(playerLoc, predicate, horRadius);
 	}
 	public static Minecart summonMinecart(Location l, Player p) {
 		Minecart mc = l.getWorld().spawn(l, Minecart.class);
@@ -53,10 +53,10 @@ public class SummonUtils
 		Predicate<Block> predicate = new Predicate<Block>() {
 			@Override
 			public boolean test(Block b) {
-				return Utils.contains(STRIDER_BLOCKS, b.getType());
+				return Utils.contains(STRIDER_BLOCKS, b.getType()) && UtilsType.playerCanFlyOn(b);
 			}
 		};
-		return UtilsWorld.searchBlock(playerLoc.add(0, -1, 0), predicate, horRadius, true);
+		return UtilsWorld.searchBlock(playerLoc.add(0, -1, 0), predicate, horRadius);
 	}
 	public static Strider summonStrider(Location l, Player p) {
 		l.setDirection(p.getLocation().getDirection());
@@ -74,7 +74,7 @@ public class SummonUtils
 				return UtilsType.playerCanStayIn(b);
 			}
 		};
-		return UtilsWorld.searchBlock(playerLoc.add(0, -1, 0), predicate, horRadius, false);
+		return UtilsWorld.searchBlock(playerLoc, predicate, horRadius);
 	}
 	public static Pig summonPig(Location l, Player p) {
 		l.setDirection(p.getLocation().getDirection());
