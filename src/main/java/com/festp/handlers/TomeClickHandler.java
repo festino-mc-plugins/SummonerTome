@@ -8,6 +8,8 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+
+import com.festp.Permissions;
 import com.festp.tome.SummonerTome;
 import com.festp.utils.SummonUtils;
 import com.festp.utils.UtilsType;
@@ -18,22 +20,29 @@ public class TomeClickHandler implements Listener
 	@EventHandler
 	public void onPlayerInteractEntity(PlayerInteractEntityEvent event) //PlayerInteractAtEntityEvent
 	{
-		if (SummonUtils.wasSummoned(event.getRightClicked())) return;
+		Player player = event.getPlayer();
+		if (!player.hasPermission(Permissions.USE))
+			return;
+
+		Entity entity = event.getRightClicked();
+		if (SummonUtils.wasSummoned(entity))
+			return;
 		
 		boolean mainHand = true;
-		ItemStack item = event.getPlayer().getInventory().getItemInMainHand();
+		ItemStack item = player.getInventory().getItemInMainHand();
 		if (item == null) {
 			mainHand = false;
-			item = event.getPlayer().getInventory().getItemInOffHand();
+			item = player.getInventory().getItemInOffHand();
 			if (item == null)
 				return;
 		}
 
 		SummonerTome tome = SummonerTome.getTome(item);
-		if (tome == null) return;
-		if (SummonUtils.hasSummoned(item)) return;
+		if (tome == null)
+			return;
+		if (SummonUtils.hasSummoned(item))
+			return;
 		
-		Entity entity = event.getRightClicked();
 		if (!tome.trySwap(entity))
 			return;
 
@@ -41,15 +50,18 @@ public class TomeClickHandler implements Listener
 
 		ItemStack updatedTome = tome.setTome(item);
 		if (mainHand)
-			event.getPlayer().getInventory().setItemInMainHand(updatedTome);
+			player.getInventory().setItemInMainHand(updatedTome);
 		else
-			event.getPlayer().getInventory().setItemInOffHand(updatedTome);
+			player.getInventory().setItemInOffHand(updatedTome);
 	}
 	
 	// Summoning
 	@EventHandler
 	public void onPlayerInteract(PlayerInteractEvent event)
 	{
+		if (!event.getPlayer().hasPermission(Permissions.USE))
+			return;
+		
 		Player player = event.getPlayer();
 		if (player.isInsideVehicle())
 			return;

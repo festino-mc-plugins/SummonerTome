@@ -7,6 +7,7 @@ import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.CraftItemEvent;
@@ -19,6 +20,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import com.festp.CraftManager;
 import com.festp.Main;
+import com.festp.Permissions;
 import com.festp.components.BoatComponent;
 import com.festp.components.BoatData;
 import com.festp.components.CustomHorseComponent;
@@ -142,8 +144,14 @@ public class TomeCraftHandler implements Listener
 
 		ItemStack[] matrix = event.getInventory().getMatrix();
 		// upgrade horse to custom horse:   any horse tome + NAME from nametag
+		// set the actual result of the custom horse tome recipe
 		if (isEqual(event.getRecipe(), customHorseRecipe))
 		{
+			if (!hasPermission(event.getViewers(), Permissions.CRAFT)) {
+				event.getInventory().setResult(null);
+				return;
+			}
+			
 			String customName = null;
 			boolean correct = true;
 			ItemStack oldTome = null;
@@ -198,9 +206,14 @@ public class TomeCraftHandler implements Listener
 	    	return;
 		}
 		
-		// combined tome recipe result
+		// set the actual result of the combined tome recipe
 		if (isEqual(event.getRecipe(), combineRecipe))
 		{
+			if (!hasPermission(event.getViewers(), Permissions.CRAFT)) {
+				event.getInventory().setResult(null);
+				return;
+			}
+			
 			boolean correct = true;
 			List<ITomeComponent> tomes = new ArrayList<>();
 			for (int i = 0; i < matrix.length; i++)
@@ -244,6 +257,15 @@ public class TomeCraftHandler implements Listener
 		}
 	}
 	
+	private boolean hasPermission(List<HumanEntity> viewers, String permission) {
+		if (viewers == null || permission == null)
+			return false;
+		for (HumanEntity viewer : viewers)
+			if (!viewer.hasPermission(permission))
+				return false;
+		return true;
+	}
+
 	// TODO scalable system (may be ITomeComponent#isCompatible(ITomeComponent)) 
 	public boolean isCompatible(ITomeComponent comp1, ITomeComponent comp2)
 	{

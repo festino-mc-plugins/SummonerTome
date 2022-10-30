@@ -1,13 +1,33 @@
+api-version: 1.14
 name: SummonerTome
 version: 1.0.0
 authors: [FEST_Channel]
-
 description: Portable vehicles.
+website: https://github.com/festino-mc-plugins/SummonerTome
 
 main: com.festp.Main
 
 commands:
-         sumtome:
+         tome:
            description: Get tome items.
-           default: op
-api-version: 1.14
+
+permissions:
+    summonertome.*:
+        description: Gives access to all SummonerTome commands
+        children:
+            summonertome.get: true
+            summonertome.configure: true
+            summonertome.craft: true
+            summonertome.use: true
+    summonertome.get:
+        description: Allows to get tome items.
+        default: op
+    summonertome.configure:
+        description: Allows to configure plugin behaviour.
+        default: op
+    summonertome.craft:
+        description: Allows to craft tome items.
+        default: true
+    summonertome.use:
+        description: Allows to swap and summon vechicles.
+        default: true

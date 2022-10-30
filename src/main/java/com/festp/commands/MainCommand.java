@@ -2,11 +2,8 @@ package com.festp.commands;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map.Entry;
-
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -15,20 +12,23 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+
+import com.festp.Permissions;
 import com.festp.handlers.TomeItemHandler;
 import com.festp.tome.TomeType;
-import com.festp.utils.UtilsType;
 import com.google.common.collect.Lists;
 
 public class MainCommand  implements CommandExecutor, TabCompleter
 {
-	public final static String COMMAND = "sumtome";
-	String COMMAND_USAGE = ChatColor.GRAY+"Usage: /" + COMMAND + " "+ChatColor.GRAY+"type";
-	String COMMAND_EXAMPLES = ChatColor.GRAY + "Example:\n"
-			+ "  /" + COMMAND + " boat";
+	private final static String SUBCOMMAND_GET = "get";
 	
+	public final static String COMMAND = "tome";
+	private final static String COMMAND_USAGE = ChatColor.GRAY+"Usage: /" + COMMAND + " " + SUBCOMMAND_GET + " "+ChatColor.GRAY+"type";
+	private final static String COMMAND_EXAMPLES = ChatColor.GRAY + "Example:\n"
+			+ "  /" + COMMAND + " " + SUBCOMMAND_GET + " boat";
+	
+	private final static String NO_PERM = ChatColor.RED + "You must have " + ChatColor.WHITE + "%s" + ChatColor.RED + " permission to perform this command.";
 	private final static String NO_PLAYER = ChatColor.RED + "You must be a player to perform this command.";
-	private final static String NO_OP = ChatColor.RED + "You must be an operator to perform this command.";
 	private final static String NO_SPACE = ChatColor.RED + "There are no space in the inventory.";
 	
 	List<String> enNames = new ArrayList<>();
@@ -69,42 +69,26 @@ public class MainCommand  implements CommandExecutor, TabCompleter
 	@EventHandler
 	public boolean onCommand(CommandSender sender, Command cmd, String lbl, String[] args)
 	{
-		if (!cmd.getName().equalsIgnoreCase(COMMAND))
-			return false;
-
-		if (!(sender instanceof Player)) {
-			sender.sendMessage(NO_PLAYER);
-			return false;
+		if (args.length == 0 || args[0].equals("?")) {
+			sender.sendMessage(COMMAND_USAGE);
+			sender.sendMessage(COMMAND_EXAMPLES);
+			return true;
 		}
-		if (!sender.isOp()) {
-			sender.sendMessage(NO_OP);
-			return false;
-		}
-		if (args.length > 0) {
-			//Material
-			String name = args[0];
-			if (name.equals("?")) {
-				sender.sendMessage(COMMAND_USAGE);
-				sender.sendMessage(COMMAND_EXAMPLES);
-				return true;
+		String subcommand = args[0];
+		if (subcommand.equalsIgnoreCase(SUBCOMMAND_GET))
+		{
+			if (!sender.hasPermission(Permissions.GET)) {
+				sender.sendMessage(String.format(NO_PERM, Permissions.GET));
+				return false;
 			}
-
+			
+			if (!(sender instanceof Player)) {
+				sender.sendMessage(NO_PLAYER);
+				return false;
+			}
 			Player p = (Player)sender;
-			if (name.equals("scan")) {
-				Block b = p.getLocation().getBlock();
-				int yMin = Math.max(p.getWorld().getMinHeight() - b.getY(), -10);
-				int yMax = Math.min(p.getWorld().getMaxHeight() - 1 - b.getY(), 10);
-				for (int dy = yMin; dy <= yMax; dy++)
-					for (int dx = -10; dx <= 10; dx++)
-						for (int dz = -10; dz <= 10; dz++)
-							UtilsType.isTransparent(b.getRelative(dx, dy, dz));
-				
-				sender.sendMessage(ChatColor.GREEN + "" + ChatColor.BOLD + "Transparent | Solid:");
-				for (Entry<Material, Boolean> entry : UtilsType.getIsTransparent().entrySet())
-					sender.sendMessage(ChatColor.GREEN + "    " + entry.getValue() + " | " + UtilsType.getIsSolid().get(entry.getKey()) + " : " + entry.getKey());
-				return true;
-			}
-
+			
+			String name = args[1];
 			ItemStack item = getItem(name);
 			
 			// give item
@@ -125,6 +109,27 @@ public class MainCommand  implements CommandExecutor, TabCompleter
 			}
 			return true;
 		}
+		/*if (name.equals("scan")) {
+			if (!(sender instanceof Player)) {
+				sender.sendMessage(NO_PLAYER);
+				return false;
+			}
+			Player p = (Player)sender;
+			
+			Block b = p.getLocation().getBlock();
+			int yMin = Math.max(p.getWorld().getMinHeight() - b.getY(), -10);
+			int yMax = Math.min(p.getWorld().getMaxHeight() - 1 - b.getY(), 10);
+			for (int dy = yMin; dy <= yMax; dy++)
+				for (int dx = -10; dx <= 10; dx++)
+					for (int dz = -10; dz <= 10; dz++)
+						UtilsType.isTransparent(b.getRelative(dx, dy, dz));
+			
+			sender.sendMessage(ChatColor.GREEN + "" + ChatColor.BOLD + "Transparent | Solid:");
+			for (Entry<Material, Boolean> entry : UtilsType.getIsTransparent().entrySet())
+				sender.sendMessage(ChatColor.GREEN + "    " + entry.getValue() + " | " + UtilsType.getIsSolid().get(entry.getKey()) + " : " + entry.getKey());
+			return true;
+	    }*/
+		
 		sender.sendMessage(COMMAND_USAGE);
 		sender.sendMessage(COMMAND_EXAMPLES);
 		return false;
