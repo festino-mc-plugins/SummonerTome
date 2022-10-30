@@ -13,39 +13,27 @@ public class UtilsWorld
 	{
 		double locX = getBlockCenterOffset(loc.getX());
 		double locZ = getBlockCenterOffset(loc.getZ());
-		Block start_block = loc.getBlock();
+		Block startBlock = loc.getBlock();
 		int radius = (int)Math.ceil(horRadius);
 		int horRadiusSquared = (int) Math.ceil(horRadius * horRadius);
-		int width = radius * 2 + 1;
 		int vertRadius = 0;
-		int height = vertRadius * 2 + 1;
-		boolean[][][] grid = new boolean[width][height][width];
 		Block b;
-		for (int dz = -radius; dz <= radius; dz++)
-			for (int dy = -vertRadius; dy <= vertRadius; dy++)
-				for (int dx = -radius; dx <= radius; dx++)
-				{
-					if (dx * dx + dz * dz >= horRadiusSquared)
-						continue;
-					b = start_block.getRelative(dx, dy, dz);
-					grid[dx + radius][dy + vertRadius][dz + radius] = predicate.test(b);
-				}
 		Block foundBlock = null;
 		double distSquared = horRadiusSquared;
 		for (int dz = -radius; dz <= radius; dz++)
 			for (int dy = -vertRadius; dy <= vertRadius; dy++)
 				for (int dx = -radius; dx <= radius; dx++)
 				{
-					int x = dx + radius;
-					int y = dy + vertRadius;
-					int z = dz + radius;
-					if (!grid[x][y][z])
+					if (dx * dx + dz * dz >= horRadiusSquared)
+						continue;
+					b = startBlock.getRelative(dx, dy, dz);
+					if (!predicate.test(b))
 						continue;
 					double xDist = locX - dx;
 					double zDist = locZ - dz;
 					double dist2 = xDist * xDist + zDist * zDist;
 					if (dist2 < distSquared) {
-						foundBlock = start_block.getRelative(dx, dy, dz);
+						foundBlock = startBlock.getRelative(dx, dy, dz);
 						distSquared = dist2;
 					}
 				}
@@ -54,136 +42,61 @@ public class UtilsWorld
 		return foundBlock.getLocation().add(0.5, 0, 0.5);
 	}
 	
-	/** Checks 2x2 area for 3x2x3 clear area and specific block under the center */
-	public static Location searchArea_3x3(Location loc, Material[] blocks)
+	/** Try find nearest NxN area player can fly with at least one required block */
+	public static Location searchArea_NxN(Location loc, int N, double horRadius, Material[] blocks)
 	{
-		boolean xPriority = false, zPriority = false;
-		if (getBlockCenterOffset(loc.getX()) > 0) xPriority = true;
-		if (getBlockCenterOffset(loc.getZ()) > 0) zPriority = true;
-		double x = loc.getX();
-		double dx = xPriority ? 1 : -1;
-		double dz = zPriority ? 1 : -1;
-		loc.setX(Math.floor(loc.getX()) + 0.5);
-		loc.setZ(Math.floor(loc.getZ()) + 0.5);
-		if (Utils.contains(blocks, loc.getBlock().getType()))
-			if (UtilsWorld.isEmptyAbove_3x2x3(loc.getBlock()))
-				return loc.clone().add(0, 1, 0);
-		
-		loc.add(dx, 0, 0);
-		if (Utils.contains(blocks, loc.getBlock().getType()))
-			if (UtilsWorld.isEmptyAbove_3x2x3(loc.getBlock()))
-				return loc.clone().add(0, 1, 0);
-		
-		loc.setX(x);
-		loc.add(0, 0, dz);
-		if (Utils.contains(blocks, loc.getBlock().getType()))
-			if (UtilsWorld.isEmptyAbove_3x2x3(loc.getBlock()))
-				return loc.clone().add(0, 1, 0);
-		
-		loc.add(dx, 0, 0);
-		if (Utils.contains(blocks, loc.getBlock().getType()))
-			if (UtilsWorld.isEmptyAbove_3x2x3(loc.getBlock()))
-				return loc.clone().add(0, 1, 0);
-		return null;
-	}
-	
-	private static boolean isEmptyAbove_3x2x3(Block block)
-	{
-		boolean empty = true;
-		for (int dx = -1; dx <= 1; dx++)
-			for (int dz = -1; dz <= 1; dz++)
-				if (!UtilsType.playerCanFlyOn(block.getRelative(dx, 0, dz))) {
-					empty = false;
-					break;
+		// fill the integer grid: 0, 1, 2
+		// check areas: product is >= 2
+		// calculate distance, find minimal
+		// return area center if found
+		Block startBlock = loc.getBlock();
+		int radius = (int)Math.ceil(horRadius) + (N + 1) / 2;
+		int horRadiusSquared = (int) Math.ceil(horRadius * horRadius);
+		int width = radius * 2 + 1;
+		int vertRadius = 0;
+		int height = vertRadius * 2 + 1;
+		int[][][] grid = new int[width][height][width];
+		Block b;
+		for (int dz = -radius; dz <= radius; dz++)
+			for (int dy = -vertRadius; dy <= vertRadius; dy++)
+				for (int dx = -radius; dx <= radius; dx++)
+				{
+					int x = dx + radius;
+					int y = dy + vertRadius;
+					int z = dz + radius;
+					if (dx * dx + dz * dz >= horRadiusSquared)
+						continue;
+					b = startBlock.getRelative(dx, dy, dz);
+					grid[x][y][z] += UtilsType.playerCanFlyOn(b) ? 1 : 0;
+					//grid[x][y][z] = predicate.test(b) ? 0 : 1;
+					grid[x][y][z] += Utils.contains(blocks, b.getType()) ? 1 : 0;
 				}
-		return empty;
-	}
-
-	public static Location searchBlock22Platform(Location loc, Material[] blocks, double horRadius, boolean full)
-	{
-		// TODO fix wrong priorities
-		boolean xPositive = false, zPositive = false;
-		if (getBlockCenterOffset(loc.getX()) > 0) xPositive = true;
-		if (getBlockCenterOffset(loc.getZ()) > 0) zPositive = true;
-		boolean xPriorierZ = true;
-		if (Math.abs(getBlockCenterOffset(loc.getX())) < Math.abs(getBlockCenterOffset(loc.getZ())))
-			xPriorierZ = false;
-		Block start_block = loc.getBlock();
-		Block found_block = null;
-		searching :
-		{
-			for (int r = 0; r <= 1.1 * horRadius; r++) {
-				for (int dy = 0; dy <= r / 2; dy++) {
-					int temp = r - dy;
-					for (int d = 0; d <= temp; d++) {
-						int[] dxPool = xPositive ? new int[] {d, -d} : new int[] {-d, d},
-							  dzPool = zPositive ? new int[] {d, -d} : new int[] {-d, d};
-						if (xPriorierZ)
-							for (int dz : dzPool)
-								for (int dx : dxPool) {
-									found_block = start_block.getRelative(dx, dy, r-Math.abs(dz));
-									if (is22Platform(blocks, found_block, xPositive, zPositive, full))
-										break searching;
-									found_block = start_block.getRelative(dx, dy, dz);
-									if (is22Platform(blocks, found_block, xPositive, zPositive, full))
-										break searching;
-								}
-						else
-							for (int dx : dxPool)
-								for (int dz : dzPool) {
-									found_block = start_block.getRelative(dx, dy, r-Math.abs(dz));
-									if (is22Platform(blocks, found_block, xPositive, zPositive, full))
-										break searching;
-									found_block = start_block.getRelative(dx, dy, dz);
-									if (is22Platform(blocks, found_block, xPositive, zPositive, full))
-										break searching;
-								}
+		Location foundLoc = null;
+		double distSquared = horRadiusSquared;
+		for (int dz = -radius + N; dz <= radius; dz++)
+			for (int dy = -vertRadius; dy <= vertRadius; dy++)
+				for (int dx = -radius + N; dx <= radius; dx++)
+				{
+					int x = dx + radius;
+					int y = dy + vertRadius;
+					int z = dz + radius;
+					int product = 1;
+					for (int j = -N; j < 0; j++)
+						for (int i = -N; i < 0; i++)
+							product *= grid[x + i][y][z + j];
+									
+					// has non-flyable blocks (==0) or no required blocks(==0 or ==1)
+					if (product < 2)
+						continue;
+					
+					Location l = startBlock.getLocation().add(dx - 0.5 * N, dy, dz - 0.5 * N);
+					double dist2 = l.distanceSquared(loc);
+					if (dist2 < distSquared) {
+						foundLoc = l;
+						distSquared = dist2;
 					}
 				}
-			}
-			return null;
-		}
-		return found_block.getLocation().add(
-				xPositive ? 1 : 0,
-				1,
-				zPositive ? 1 : 0);
-	}
-	
-	private static boolean is22Platform(Material[] valid_materials, Block start_block, boolean positiveX, boolean positiveZ, boolean full)
-	{
-		int dx = positiveX ? 1 : -1;
-		int dz = positiveZ ? 1 : -1;
-		int countBlocks = 0, countFlyable = 0;
-		if (UtilsType.playerCanFlyOn(start_block)) {
-			countFlyable++;
-			if (Utils.contains(valid_materials, start_block.getType()))
-				countBlocks++;
-		}
-		Block block = start_block.getRelative(0, 0, dz);
-		if (UtilsType.playerCanFlyOn(block)) {
-			countFlyable++;
-			if (Utils.contains(valid_materials, block.getType()))
-				countBlocks++;
-		}
-		block = start_block.getRelative(dx, 0, 0);
-		if (UtilsType.playerCanFlyOn(block)) {
-			countFlyable++;
-			if (Utils.contains(valid_materials, block.getType()))
-				countBlocks++;
-		}
-		block = start_block.getRelative(dx, 0, dz);
-		if (UtilsType.playerCanFlyOn(block)) {
-			countFlyable++;
-			if (Utils.contains(valid_materials, block.getType()))
-				countBlocks++;
-		}
-		if (countFlyable < 2 * 2)
-			return false;
-		if (countBlocks == 2 * 2)
-			return true;
-		if (!full && countBlocks >= 1)
-			return true;
-		return false;
+		return foundLoc;
 	}
 	
 	public static Location findEjectBlock2x2(Location playerLoc)

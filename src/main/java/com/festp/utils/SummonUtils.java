@@ -92,8 +92,8 @@ public class SummonUtils
 		//      and iterate squares on smaller grid(0.5 block) to find the nearest place to spawn
 		loc.add(0, 0.5, 0);
 		loc.setY(Math.floor(loc.getY() - 1));
-		Location l_3x3 = UtilsWorld.searchArea_3x3(loc, BOAT_BLOCKS);
-		Location l_2x2 = UtilsWorld.searchBlock22Platform(loc, BOAT_BLOCKS, horRadius, false);
+		Location l_3x3 = UtilsWorld.searchArea_NxN(loc, 3, horRadius, BOAT_BLOCKS);
+		Location l_2x2 = UtilsWorld.searchArea_NxN(loc, 2, horRadius, BOAT_BLOCKS);
 		
 		Location res = l_3x3;
 		if (res == null) {
@@ -103,6 +103,8 @@ public class SummonUtils
 				res = l_2x2;
 			}
 		}
+		if (res != null)
+			res.add(0, 1, 0);
 		return res;
 	}
 	public static Boat summonBoat(Location l, Player p, BoatData boatData) {
