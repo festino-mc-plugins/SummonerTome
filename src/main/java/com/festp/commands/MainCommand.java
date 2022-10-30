@@ -14,7 +14,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
 import com.festp.Permissions;
-import com.festp.handlers.TomeItemHandler;
+import com.festp.tome.TomeItemBuilder;
 import com.festp.tome.TomeType;
 import com.google.common.collect.Lists;
 
@@ -46,21 +46,21 @@ public class MainCommand  implements CommandExecutor, TabCompleter
 		name = name.toLowerCase();
 		ItemStack item = null;
 		if (name.equalsIgnoreCase("minecart")) {
-			item = TomeItemHandler.getNewTome(TomeType.MINECART);
+			item = TomeItemBuilder.getNewTome(TomeType.MINECART);
 		} else if (name.equalsIgnoreCase("boat")) {
-			item = TomeItemHandler.getNewTome(TomeType.BOAT);
+			item = TomeItemBuilder.getNewTome(TomeType.BOAT);
 		} else if (name.equalsIgnoreCase("strider")) {
-			item = TomeItemHandler.getNewTome(TomeType.STRIDER);
+			item = TomeItemBuilder.getNewTome(TomeType.STRIDER);
 		} else if (name.equalsIgnoreCase("pig")) {
-			item = TomeItemHandler.getNewTome(TomeType.PIG);
+			item = TomeItemBuilder.getNewTome(TomeType.PIG);
 		} else if (name.equalsIgnoreCase("horse")) {
-			item = TomeItemHandler.getNewTome(TomeType.HORSE);
+			item = TomeItemBuilder.getNewTome(TomeType.HORSE);
 		} else if (name.equalsIgnoreCase("custom_horse")) {
-			item = TomeItemHandler.getNewTome(TomeType.CUSTOM_HORSE);
+			item = TomeItemBuilder.getNewTome(TomeType.CUSTOM_HORSE);
 		} else if (name.equalsIgnoreCase("all")) {
-			item = TomeItemHandler.getNewTome(TomeType.getAll());
+			item = TomeItemBuilder.getNewTome(TomeType.getAll());
 		} else if (name.equalsIgnoreCase("custom_all")) {
-			item = TomeItemHandler.getNewTome(TomeType.getCustomAll());
+			item = TomeItemBuilder.getNewTome(TomeType.getCustomAll());
 		}
 		return item;
 	}

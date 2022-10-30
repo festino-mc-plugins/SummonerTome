@@ -1,4 +1,4 @@
-package com.festp.handlers;
+package com.festp.tome;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,11 +12,9 @@ import org.bukkit.inventory.meta.Repairable;
 import com.festp.components.CustomHorseComponent;
 import com.festp.components.HorseFormat;
 import com.festp.components.ITomeComponent;
-import com.festp.tome.SummonerTome;
-import com.festp.tome.TomeType;
 import com.festp.utils.NBTUtils;
 
-public class TomeItemHandler
+public class TomeItemBuilder
 {
 	private static final int REPAIR_COST = 1000;
 	private static final String TOME_NBT_KEY = "summonertome";

@@ -8,7 +8,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import com.festp.components.ITomeComponent;
-import com.festp.handlers.TomeItemHandler;
 
 public class SummonerTome
 {
@@ -21,20 +20,20 @@ public class SummonerTome
 
 	public static boolean isTome(ItemStack item)
 	{
-		return TomeItemHandler.hasTag(item);
+		return TomeItemBuilder.hasTag(item);
 	}
 	
 	public static SummonerTome getTome(ItemStack item)
 	{
         if (!isTome(item))
     		return null;
-    	String data = TomeItemHandler.getTag(item);
+    	String data = TomeItemBuilder.getTag(item);
 		return new SummonerTome(TomeFormatter.deserialize(data));
 	}
 	public ItemStack setTome(ItemStack item)
 	{
 		String data = TomeFormatter.serialize(components);
-		return TomeItemHandler.setTag(item, data);
+		return TomeItemBuilder.setTag(item, data);
 	}
 
 	public boolean trySwap(Entity entity)

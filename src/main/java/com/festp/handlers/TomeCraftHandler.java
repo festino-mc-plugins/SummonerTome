@@ -28,6 +28,7 @@ import com.festp.components.HorseComponent;
 import com.festp.components.HorseFormat;
 import com.festp.components.ITomeComponent;
 import com.festp.tome.SummonerTome;
+import com.festp.tome.TomeItemBuilder;
 import com.festp.tome.TomeType;
 import com.festp.utils.Utils;
 import com.festp.utils.UtilsRandom;
@@ -54,14 +55,14 @@ public class TomeCraftHandler implements Listener
     	NamespacedKey key_pig = new NamespacedKey(plugin, "pig_tome");
     	NamespacedKey key_horse = new NamespacedKey(plugin, "horse_tome");
 		
-    	ItemStack minecartBook = TomeItemHandler.getNewTome(EnumSet.of(TomeType.MINECART));
+    	ItemStack minecartBook = TomeItemBuilder.getNewTome(EnumSet.of(TomeType.MINECART));
     	ShapelessRecipe minecartRecipe = new ShapelessRecipe(key_minecart, minecartBook);
     	minecartRecipe.addIngredient(3, Material.MINECART);
     	minecartRecipe.addIngredient(3, Material.EXPERIENCE_BOTTLE);
     	minecartRecipe.addIngredient(1, Material.BOOK);
     	craftManager.addRecipe(key_minecart, minecartRecipe);
 		
-    	ItemStack boatBook = TomeItemHandler.getNewTome(EnumSet.of(TomeType.BOAT));
+    	ItemStack boatBook = TomeItemBuilder.getNewTome(EnumSet.of(TomeType.BOAT));
     	ShapelessRecipe boatRecipe = new ShapelessRecipe(key_boat, boatBook);
     	RecipeChoice.MaterialChoice boatChoice = new RecipeChoice.MaterialChoice(BoatData.getSupportedBoats());
     	boatRecipe.addIngredient(boatChoice);
@@ -72,7 +73,7 @@ public class TomeCraftHandler implements Listener
     	craftManager.addRecipe(key_boat, boatRecipe);
     	this.boatRecipe = boatRecipe;
     	
-    	ItemStack striderBook = TomeItemHandler.getNewTome(EnumSet.of(TomeType.STRIDER));
+    	ItemStack striderBook = TomeItemBuilder.getNewTome(EnumSet.of(TomeType.STRIDER));
     	ShapelessRecipe striderRecipe = new ShapelessRecipe(key_strider, striderBook);
     	striderRecipe.addIngredient(1, Material.SADDLE);
     	striderRecipe.addIngredient(1, Material.LAVA_BUCKET);
@@ -81,7 +82,7 @@ public class TomeCraftHandler implements Listener
     	striderRecipe.addIngredient(1, Material.BOOK);
     	craftManager.addRecipe(key_strider, striderRecipe);
     	
-    	ItemStack pigBook = TomeItemHandler.getNewTome(EnumSet.of(TomeType.PIG));
+    	ItemStack pigBook = TomeItemBuilder.getNewTome(EnumSet.of(TomeType.PIG));
     	ShapelessRecipe pigRecipe = new ShapelessRecipe(key_pig, pigBook);
     	pigRecipe.addIngredient(1, Material.SADDLE);
     	pigRecipe.addIngredient(1, Material.PORKCHOP);
@@ -91,7 +92,7 @@ public class TomeCraftHandler implements Listener
     	craftManager.addRecipe(key_pig, pigRecipe);
     	
     	// unwearable armor, untakeable saddle
-    	ItemStack horseBook = TomeItemHandler.getNewTome(EnumSet.of(TomeType.HORSE));
+    	ItemStack horseBook = TomeItemBuilder.getNewTome(EnumSet.of(TomeType.HORSE));
     	ShapelessRecipe horseRecipe = new ShapelessRecipe(key_horse, horseBook);
     	horseRecipe.addIngredient(1, Material.SADDLE);
     	horseRecipe.addIngredient(1, Material.LEATHER);
@@ -111,7 +112,7 @@ public class TomeCraftHandler implements Listener
     	RecipeChoice.ExactChoice horseTomeChoice = new RecipeChoice.ExactChoice(horseBook);
     	
     	// in craft events because of Horse tome
-    	ItemStack customHorseBook = TomeItemHandler.getNewTome(EnumSet.of(TomeType.CUSTOM_HORSE));
+    	ItemStack customHorseBook = TomeItemBuilder.getNewTome(EnumSet.of(TomeType.CUSTOM_HORSE));
     	ShapelessRecipe customHorseRecipe = new ShapelessRecipe(key_customHorse, customHorseBook);
     	customHorseRecipe.addIngredient(1, Material.NAME_TAG);
     	customHorseRecipe.addIngredient(1, Material.GOLDEN_APPLE);
@@ -126,7 +127,7 @@ public class TomeCraftHandler implements Listener
     	RecipeChoice.ExactChoice tome1Choice = new RecipeChoice.ExactChoice(ingredientTomes[0]);
     	RecipeChoice.ExactChoice tome2Choice = new RecipeChoice.ExactChoice(ingredientTomes[1]);
     	
-    	ItemStack combinedBook = TomeItemHandler.getNewTome(EnumSet.of(TomeType.MINECART, TomeType.BOAT));
+    	ItemStack combinedBook = TomeItemBuilder.getNewTome(EnumSet.of(TomeType.MINECART, TomeType.BOAT));
     	ShapelessRecipe combineRecipe = new ShapelessRecipe(key_combine, combinedBook);
     	combineRecipe.addIngredient(tome1Choice);
     	combineRecipe.addIngredient(1, Material.EXPERIENCE_BOTTLE);
@@ -192,7 +193,7 @@ public class TomeCraftHandler implements Listener
 				horseComp.setHorseData(HorseFormat.generate());
 				oldType.replace(HorseComponent.class, horseComp);
 				ItemStack newTome = new ItemStack(oldTome);
-				newTome = TomeItemHandler.applyTome(newTome, oldType);
+				newTome = TomeItemBuilder.applyTome(newTome, oldType);
 				if (customName != null) {
 					ItemMeta meta = newTome.getItemMeta();
 					meta.setDisplayName(customName);
@@ -247,7 +248,7 @@ public class TomeCraftHandler implements Listener
 			if (correct) {
 				SummonerTome combinedTome = new SummonerTome(tomes.toArray(new ITomeComponent[0]));
 		    	ItemStack tome = new ItemStack(Material.ENCHANTED_BOOK);
-		    	tome = TomeItemHandler.applyTome(tome, combinedTome);
+		    	tome = TomeItemBuilder.applyTome(tome, combinedTome);
 		    	event.getInventory().setResult(tome);
 			}
 			else {
