@@ -20,12 +20,17 @@ public class TomeClickHandler implements Listener
 	@EventHandler
 	public void onPlayerInteractEntity(PlayerInteractEntityEvent event) //PlayerInteractAtEntityEvent
 	{
+		Entity entity = event.getRightClicked();
+		if (SummonUtils.wasSummoned(entity)) {
+			if (entity.getPassengers().size() > 0) {
+				// disable nametags, breeding, etc
+				event.setCancelled(true);
+			}
+			return;
+		}
+		
 		Player player = event.getPlayer();
 		if (!player.hasPermission(Permissions.USE))
-			return;
-
-		Entity entity = event.getRightClicked();
-		if (SummonUtils.wasSummoned(entity))
 			return;
 		
 		boolean mainHand = true;
