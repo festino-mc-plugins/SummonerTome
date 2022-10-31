@@ -17,6 +17,7 @@ import org.bukkit.inventory.InventoryHolder;
 
 import com.festp.DelayedTask;
 import com.festp.TaskList;
+import com.festp.config.FeedbackEffects;
 import com.festp.utils.SummonUtils;
 import com.festp.utils.UtilsWorld;
 
@@ -88,6 +89,7 @@ public class TomeEntityHandler implements Listener {
 			((InventoryHolder)entity).getInventory().clear();
 		// entity.eject(); and passenger.leaveVehicle(); are not working; critical for striders
 		eject(entity);
+		FeedbackEffects.playDespawn(entity.getLocation());
 		entity.remove();
 	}
 	

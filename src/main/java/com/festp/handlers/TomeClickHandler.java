@@ -10,28 +10,48 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
 import com.festp.Permissions;
+import com.festp.config.FeedbackEffects;
 import com.festp.tome.SummonerTome;
 import com.festp.utils.SummonUtils;
 import com.festp.utils.UtilsType;
 
 public class TomeClickHandler implements Listener
 {
+	private static class InteractResult {
+		public final boolean hasTome;
+		public final boolean failed;
+		public final Entity entity;
+		
+		public InteractResult(boolean hasTome, boolean failed) {
+			this.hasTome = hasTome;
+			this.failed = failed;
+			this.entity = null;
+		}
+		
+		public InteractResult(boolean hasTome, boolean failed, Entity entity) {
+			this.hasTome = hasTome;
+			this.failed = failed;
+			this.entity = entity;
+		}
+	}
+	
 	// Customization (swap an entity with the tome entity)
 	@EventHandler
 	public void onPlayerInteractEntity(PlayerInteractEntityEvent event) //PlayerInteractAtEntityEvent
 	{
-		Entity entity = event.getRightClicked();
-		if (SummonUtils.wasSummoned(entity)) {
-			if (entity.getPassengers().size() > 0) {
-				// disable nametags, breeding, etc
-				event.setCancelled(true);
-			}
+		InteractResult res = getSwapResult(event);
+		if (!res.hasTome)
 			return;
-		}
-		
+		if (res.failed)
+			FeedbackEffects.playSwapFail(event.getPlayer());
+		else
+			FeedbackEffects.playSwapSuccess(res.entity.getLocation());
+	}
+	
+	private InteractResult getSwapResult(PlayerInteractEntityEvent event)
+	{
+		InteractResult res = new InteractResult(false, true);
 		Player player = event.getPlayer();
-		if (!player.hasPermission(Permissions.USE))
-			return;
 		
 		boolean mainHand = true;
 		ItemStack item = player.getInventory().getItemInMainHand();
@@ -39,17 +59,32 @@ public class TomeClickHandler implements Listener
 			mainHand = false;
 			item = player.getInventory().getItemInOffHand();
 			if (item == null)
-				return;
+				return res;
 		}
 
 		SummonerTome tome = SummonerTome.getTome(item);
 		if (tome == null)
-			return;
-		if (SummonUtils.hasSummoned(item))
-			return;
+			return res;
+		res = new InteractResult(true, true);
 		
-		if (!tome.trySwap(entity))
-			return;
+		if (!player.hasPermission(Permissions.USE))
+			return res;
+		
+		Entity entity = event.getRightClicked();
+		if (SummonUtils.wasSummoned(entity)) {
+			if (entity.getPassengers().size() > 0) {
+				// disable nametags, breeding, etc
+				event.setCancelled(true);
+			}
+			return res;
+		}
+		if (SummonUtils.hasSummoned(item))
+			return res;
+		
+		boolean failed = !tome.trySwap(entity);
+		res = new InteractResult(true, failed, entity);
+		if (failed)
+			return res;
 
 		event.setCancelled(true);
 
@@ -58,21 +93,30 @@ public class TomeClickHandler implements Listener
 			player.getInventory().setItemInMainHand(updatedTome);
 		else
 			player.getInventory().setItemInOffHand(updatedTome);
+		return res;
 	}
 	
 	// Summoning
 	@EventHandler
 	public void onPlayerInteract(PlayerInteractEvent event)
 	{
-		if (!event.getPlayer().hasPermission(Permissions.USE))
+		InteractResult res = getSummonResult(event);
+		if (!res.hasTome)
 			return;
-		
+		if (res.failed)
+			FeedbackEffects.playSummonFail(event.getPlayer());
+		else
+			FeedbackEffects.playSummonSuccess(res.entity.getLocation());
+	}
+	private InteractResult getSummonResult(PlayerInteractEvent event)
+	{	
+		InteractResult res = new InteractResult(false, true);
 		Player player = event.getPlayer();
 		if (player.isInsideVehicle())
-			return;
+			return res;
 		if (!(event.getAction() == Action.RIGHT_CLICK_AIR
 				|| event.getAction() == Action.RIGHT_CLICK_BLOCK && !UtilsType.isInteractable(event.getClickedBlock().getType()) ))
-			return;
+			return res;
 
 		boolean inMainHand = true;
 		ItemStack item = player.getInventory().getItemInMainHand();
@@ -80,15 +124,22 @@ public class TomeClickHandler implements Listener
 			inMainHand = false;
 			item = player.getInventory().getItemInOffHand();
 			if (item == null)
-				return;
+				return res;
 		}
 		
 		SummonerTome tome = SummonerTome.getTome(item);
-		if (tome == null) return;
+		if (tome == null)
+			return res;
+		res = new InteractResult(true, true);
+
+		if (!event.getPlayer().hasPermission(Permissions.USE))
+			return res;
 
 		Entity summoned = tome.trySummon(player);
-		if (summoned == null)
-			return;
+		boolean failed = summoned == null;
+		res = new InteractResult(true, failed, summoned);
+		if (failed)
+			return res;
 		
 		event.setCancelled(true);
 		SummonUtils.setSummoned(summoned);
@@ -97,6 +148,7 @@ public class TomeClickHandler implements Listener
 		if (customName != null) {
 			summoned.setCustomName(customName);
 		}
+		return res;
 	}
 
 	private static String getCustomName(ItemStack tome)
