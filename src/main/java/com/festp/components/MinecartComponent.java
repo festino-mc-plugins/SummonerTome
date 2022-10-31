@@ -34,7 +34,10 @@ public class MinecartComponent implements ITomeComponent
 	}
 	
 	public Location getSummonLocation(Location playerLoc) {
-		return SummonUtils.tryFindForMinecart(playerLoc, RAIL_SEARCHING_RADIUS);
+		Location res = SummonUtils.tryFindForMinecart(playerLoc, RAIL_SEARCHING_RADIUS);
+		if (res == null)
+			return null;
+		return res.add(0.0, 0.01, 0.0); // workaround for rails on ice
 	}
 
 	public Entity summon(Player summoner, Location loc) {
