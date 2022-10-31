@@ -139,14 +139,22 @@ public class MainCommand  implements CommandExecutor, TabCompleter
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String alias, String[] args)
 	{
 		List<String> options = new ArrayList<>();
-		if (!(sender instanceof Player) || !sender.isOp())
+		if (!(sender instanceof Player) || !sender.hasPermission(Permissions.GET))
 			return options;
+
+		if (args.length == 1)
+		{
+			options.add(SUBCOMMAND_GET);
+		}
 		
-		if (args.length == 1) {
-			String arg = args[0].toLowerCase();
-			for (String itemName : enNames)
-				if (itemName.contains(arg))
-					options.add(itemName);
+		if (args.length == 2)
+		{
+			if (args[0].equalsIgnoreCase(SUBCOMMAND_GET)) {
+				String arg = args[1].toLowerCase();
+				for (String itemName : enNames)
+					if (itemName.contains(arg))
+						options.add(itemName);
+			}
 		}
 		return options;
 	}
