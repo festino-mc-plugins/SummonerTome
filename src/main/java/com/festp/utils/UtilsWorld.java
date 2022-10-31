@@ -3,7 +3,6 @@ package com.festp.utils;
 import java.util.function.Predicate;
 
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 
@@ -43,7 +42,7 @@ public class UtilsWorld
 	}
 	
 	/** Try find nearest NxN area player can fly with at least one required block */
-	public static Location searchArea_NxN(Location loc, int N, double horRadius, Material[] blocks)
+	public static Location searchArea_NxN(Location loc, int N, double horRadius, Predicate<Block> predicate)
 	{
 		// fill the integer grid: 0, 1, 2
 		// check areas: product is >= 2
@@ -68,8 +67,8 @@ public class UtilsWorld
 						continue;
 					b = startBlock.getRelative(dx, dy, dz);
 					grid[x][y][z] += UtilsType.playerCanFlyOn(b) ? 1 : 0;
-					//grid[x][y][z] = predicate.test(b) ? 0 : 1;
-					grid[x][y][z] += Utils.contains(blocks, b.getType()) ? 1 : 0;
+					if (grid[x][y][z] > 0)
+						grid[x][y][z] += predicate.test(b) ? 1 : 0;
 				}
 		Location foundLoc = null;
 		double distSquared = horRadiusSquared;
@@ -134,63 +133,6 @@ public class UtilsWorld
 		start = start.getRelative(dx, 0, 0);
 		if (UtilsType.playerCanStayIn(start))
 			return start;
-		return null;
-	}
-	
-	public static Location findHorseSpace(Location loc)
-	{
-		Block startBlock = loc.add(0, -1, 0).getBlock();
-		loc.add(0, 1, 0);
-		if (!UtilsType.playerCanFlyOn(startBlock))
-			return null;
-		// grid 3x3, has x first and z second, therefore xStep is +-1, zStep is +-3
-		int xStep = -1, zStep = -3;
-		if (getBlockCenterOffset(loc.getX()) > 0) xStep = 1;
-		if (getBlockCenterOffset(loc.getZ()) > 0) zStep = 3;
-		boolean xPriorierZ = true;
-		if (Math.abs(getBlockCenterOffset(loc.getX())) < Math.abs(getBlockCenterOffset(loc.getZ())))
-			xPriorierZ = false;
-		
-		int[] grid = new int[9];
-		// fill the grid
-		for (int i = 0; i < 9; i++) {
-			Block b = startBlock.getRelative(i % 3 - 1, 0, i / 3 - 1);
-			if (UtilsType.playerCanStayIn(b.getRelative(0, 1, 0))) 
-				grid[i] = 2;
-			else if (UtilsType.playerCanFlyOn(b)) 
-				grid[i] = 1;
-			else
-				grid[i] = 0;
-		}
-		
-		for (int i = 0; i < 4; i++)
-		{
-			int[] cells;
-			// 4 is center index
-			if (i == 0)
-				// 0++ ++ = priority cells at first
-				cells = new int[] {4, 4 + xStep, 4 + zStep, 4 + xStep + zStep};
-			else if (i == 3)
-				// 0-- -- = non-priority cells at last
-				cells = new int[] {4, 4 - xStep, 4 - zStep, 4 - xStep - zStep};
-			else if (i == 1 && xPriorierZ || i == 2 && !xPriorierZ) // priority matters here
-				// 0+- +-
-				cells = new int[] {4, 4 + xStep, 4 - zStep, 4 + xStep - zStep};
-			else
-				// 0-+ -+
-				cells = new int[] {4, 4 - xStep, 4 + zStep, 4 - xStep + zStep};
-			
-			boolean hasGround = grid[cells[0]] == 2 || grid[cells[1]] == 2 || grid[cells[2]] == 2 || grid[cells[3]] == 2;
-			boolean isClearArea = grid[cells[0]] > 0 && grid[cells[1]] > 0 && grid[cells[2]] > 0 && grid[cells[3]] > 0;
-			if (hasGround && isClearArea)
-			{
-				// grid indices to world offsets (horse would spawn in 2x2 center => offsets are 0 or 1)
-				// cells[3] is the farthest cell from the center
-				double dx = ((cells[3] + 3) % 3 - 1) < 0 ? 0 : 1;
-				double dz = cells[3] - 4 < 0 ? 0 : 1;
-				return startBlock.getLocation().add(dx, 1, dz);
-			}
-		}
 		return null;
 	}
 	

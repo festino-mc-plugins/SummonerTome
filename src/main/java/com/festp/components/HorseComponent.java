@@ -8,6 +8,7 @@ import com.festp.utils.SummonUtils;
 
 public class HorseComponent implements ITomeComponent
 {
+	private static final double SEARCHING_RADIUS = 1.5;
 	public static final char CODE = 'h';
 	
 	public char getCode() {
@@ -33,7 +34,7 @@ public class HorseComponent implements ITomeComponent
 	}
 	
 	public Location getSummonLocation(Location playerLoc) {
-		return SummonUtils.tryFindForHorse(playerLoc);
+		return SummonUtils.tryFindForHorse(playerLoc, SEARCHING_RADIUS);
 	}
 
 	public Entity summon(Player summoner, Location loc) {

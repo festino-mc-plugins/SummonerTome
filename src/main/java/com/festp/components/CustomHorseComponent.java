@@ -9,6 +9,7 @@ import com.festp.utils.SummonUtils;
 
 public class CustomHorseComponent implements ITomeComponent
 {
+	private static final double SEARCHING_RADIUS = 1.5;
 	private static final String SERIALIZATION_NO_HORSE_DATA = "null";
 	public static final char CODE = 'H';
 	
@@ -58,7 +59,7 @@ public class CustomHorseComponent implements ITomeComponent
 	}
 	
 	public Location getSummonLocation(Location playerLoc) {
-		return SummonUtils.tryFindForHorse(playerLoc);
+		return SummonUtils.tryFindForHorse(playerLoc, SEARCHING_RADIUS);
 	}
 
 	public Entity summon(Player summoner, Location loc) {

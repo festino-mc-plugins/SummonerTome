@@ -33,14 +33,40 @@ public class SummonUtils
 	private static final Material[] STRIDER_BLOCKS =
 		{ Material.LAVA };
 	
+	private static final Predicate<Block> PREDICATE_MINECART = new Predicate<Block>() {
+		@Override
+		public boolean test(Block b) {
+			return Utils.contains(MINECART_BLOCKS, b.getType());
+		}
+	};
+	private static final Predicate<Block> PREDICATE_STRIDER = new Predicate<Block>() {
+		@Override
+		public boolean test(Block b) {
+			return Utils.contains(STRIDER_BLOCKS, b.getType()) && UtilsType.playerCanFlyOn(b);
+		}
+	};
+	private static final Predicate<Block> PREDICATE_PIG = new Predicate<Block>() {
+		@Override
+		public boolean test(Block b) {
+			return UtilsType.playerCanStayIn(b);
+		}
+	};
+	private static final Predicate<Block> PREDICATE_BOAT = new Predicate<Block>() {
+		@Override
+		public boolean test(Block b) {
+			return Utils.contains(BOAT_BLOCKS, b.getType());
+		}
+	};
+	private static final Predicate<Block> PREDICATE_HORSE = new Predicate<Block>() {
+		@Override
+		public boolean test(Block b) {
+			return UtilsType.isSolid(b);
+			//return UtilsType.playerCanStayIn(b.getRelative(0, 1, 0));
+		}
+	};
+	
 	public static Location tryFindForMinecart(Location playerLoc, double horRadius) {
-		Predicate<Block> predicate = new Predicate<Block>() {
-			@Override
-			public boolean test(Block b) {
-				return Utils.contains(MINECART_BLOCKS, b.getType());
-			}
-		};
-		return UtilsWorld.searchBlock(playerLoc, predicate, horRadius);
+		return UtilsWorld.searchBlock(playerLoc, PREDICATE_MINECART, horRadius);
 	}
 	public static Minecart summonMinecart(Location l, Player p) {
 		Minecart mc = l.getWorld().spawn(l, Minecart.class);
@@ -50,13 +76,7 @@ public class SummonUtils
 	}
 	
 	public static Location tryFindForStrider(Location playerLoc, double horRadius) {
-		Predicate<Block> predicate = new Predicate<Block>() {
-			@Override
-			public boolean test(Block b) {
-				return Utils.contains(STRIDER_BLOCKS, b.getType()) && UtilsType.playerCanFlyOn(b);
-			}
-		};
-		return UtilsWorld.searchBlock(playerLoc.add(0, -1, 0), predicate, horRadius);
+		return UtilsWorld.searchBlock(playerLoc.add(0, -1, 0), PREDICATE_STRIDER, horRadius);
 	}
 	public static Strider summonStrider(Location l, Player p) {
 		l.setDirection(p.getLocation().getDirection());
@@ -68,13 +88,7 @@ public class SummonUtils
 	}
 	
 	public static Location tryFindForPig(Location playerLoc, double horRadius) {
-		Predicate<Block> predicate = new Predicate<Block>() {
-			@Override
-			public boolean test(Block b) {
-				return UtilsType.playerCanStayIn(b);
-			}
-		};
-		return UtilsWorld.searchBlock(playerLoc, predicate, horRadius);
+		return UtilsWorld.searchBlock(playerLoc, PREDICATE_PIG, horRadius);
 	}
 	public static Pig summonPig(Location l, Player p) {
 		l.setDirection(p.getLocation().getDirection());
@@ -85,15 +99,9 @@ public class SummonUtils
 		return pig;
 	}
 	
-	public static Location tryFindForBoat(Location loc, double horRadius) {
-		// TODO watered bottom blocks
-		// TODO smarter function for boats:
-		//      fill one square grid, then check player loc
-		//      and iterate squares on smaller grid(0.5 block) to find the nearest place to spawn
-		loc.add(0, 0.5, 0);
-		loc.setY(Math.floor(loc.getY() - 1));
-		Location l_3x3 = UtilsWorld.searchArea_NxN(loc, 3, horRadius, BOAT_BLOCKS);
-		Location l_2x2 = UtilsWorld.searchArea_NxN(loc, 2, horRadius, BOAT_BLOCKS);
+	private static Location findNearest_2x2_3x3(Location loc, double horRadius, Predicate<Block> predicate) {
+		Location l_3x3 = UtilsWorld.searchArea_NxN(loc, 3, horRadius, predicate);
+		Location l_2x2 = UtilsWorld.searchArea_NxN(loc, 2, horRadius, predicate);
 		
 		Location res = l_3x3;
 		if (res == null) {
@@ -103,6 +111,18 @@ public class SummonUtils
 				res = l_2x2;
 			}
 		}
+		return res;
+	}
+	
+	public static Location tryFindForBoat(Location loc, double horRadius) {
+		// TODO watered bottom blocks
+		// TODO smarter function for boats:
+		//      fill one square grid, then check player loc
+		//      and iterate squares on smaller grid(0.5 block) to find the nearest place to spawn
+		loc.add(0, 0.5, 0);
+		loc.setY(Math.floor(loc.getY() - 1));
+		
+		Location res = findNearest_2x2_3x3(loc, horRadius, PREDICATE_BOAT);
 		if (res != null)
 			res.add(0, 1, 0);
 		return res;
@@ -116,12 +136,13 @@ public class SummonUtils
 		return boat;
 	}
 
-	public static Location tryFindForHorse(Location playerLoc) {
-		Location loc = UtilsWorld.findHorseSpace(playerLoc);
-		if (loc == null)
+	public static Location tryFindForHorse(Location loc, double horRadius) {
+		loc = loc.add(0, -1, 0);
+		Location res = findNearest_2x2_3x3(loc, horRadius, PREDICATE_HORSE);
+		if (res == null)
 			return null;
-		loc.setY(playerLoc.getY());
-		return loc;
+		res.setY(loc.getY() + 1);
+		return res;
 	}
 	public static Horse summonHorse(Location l, Player p) {
 		l.setDirection(p.getLocation().getDirection());
