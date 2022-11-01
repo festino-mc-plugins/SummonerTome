@@ -216,7 +216,7 @@ public class TomeCraftHandler implements Listener
 			}
 			
 			boolean correct = true;
-			List<ITomeComponent> tomes = new ArrayList<>();
+			List<ITomeComponent> resComponents = new ArrayList<>();
 			for (int i = 0; i < matrix.length; i++)
 			{
 				if (matrix[i] == null)
@@ -225,13 +225,13 @@ public class TomeCraftHandler implements Listener
 				if (matrix[i].getType() == Material.ENCHANTED_BOOK)
 				{
 					SummonerTome oldType = SummonerTome.getTome(matrix[i]);
-					if (oldType.getComponents().length != 1) {
+					if (oldType == null || oldType.getComponents().length < 1) {
 						correct = false;
 						break;
 					}
 					
 					for (ITomeComponent compNew : oldType.getComponents())
-						for (ITomeComponent compExisting : tomes)
+						for (ITomeComponent compExisting : resComponents)
 							if (!isCompatible(compExisting, compNew))
 							{
 								correct = false;
@@ -241,12 +241,12 @@ public class TomeCraftHandler implements Listener
 						break;
 					
 					for (ITomeComponent compNew : oldType.getComponents())
-						tomes.add(compNew);
+						resComponents.add(compNew);
 				}
 			}
 			
 			if (correct) {
-				SummonerTome combinedTome = new SummonerTome(tomes.toArray(new ITomeComponent[0]));
+				SummonerTome combinedTome = new SummonerTome(resComponents.toArray(new ITomeComponent[0]));
 		    	ItemStack tome = new ItemStack(Material.ENCHANTED_BOOK);
 		    	tome = TomeItemBuilder.applyTome(tome, combinedTome);
 		    	event.getInventory().setResult(tome);
