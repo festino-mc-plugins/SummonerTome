@@ -76,7 +76,7 @@ public class TomeInventoryHandler implements Listener
 			return;
 		
 		Inventory topInv = event.getView().getTopInventory();
-		if (!(topInv instanceof AbstractHorse))
+		if (!(topInv.getHolder() instanceof AbstractHorse))
 			return;
 		AbstractHorse horse = (AbstractHorse)topInv.getHolder();
 
@@ -86,7 +86,7 @@ public class TomeInventoryHandler implements Listener
 		
 		int slot = event.getRawSlot();
 		if (slot < 0) return;
-		
+
 		boolean illegal = false;
 		Inventory inv = event.getClickedInventory();
 		if (inv instanceof AbstractHorseInventory)
@@ -131,7 +131,7 @@ public class TomeInventoryHandler implements Listener
 			return;
 		
 		Inventory topInv = event.getView().getTopInventory();
-		if (!(topInv instanceof AbstractHorse))
+		if (!(topInv.getHolder() instanceof AbstractHorse))
 			return;
 		AbstractHorse horse = (AbstractHorse)topInv.getHolder();
 		
