@@ -113,7 +113,8 @@ public class SummonUtils
 			}
 		}
 		// TODO set original Y if possible (use Block#getCollisionShape())
-		res.setY(loc.getY() + 1);
+		if (res != null)
+			res.setY(loc.getY() + 1);
 		return res;
 	}
 	
