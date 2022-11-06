@@ -100,6 +100,7 @@ public class SummonUtils
 	}
 	
 	private static Location findNearest_2x2_3x3(Location loc, double horRadius, Predicate<Block> predicate) {
+		setGroundY(loc);
 		Location l_3x3 = UtilsWorld.searchArea_NxN(loc, 3, horRadius, predicate);
 		Location l_2x2 = UtilsWorld.searchArea_NxN(loc, 2, horRadius, predicate);
 		
@@ -111,17 +112,13 @@ public class SummonUtils
 				res = l_2x2;
 			}
 		}
+		// TODO set original Y if possible (use Block#getCollisionShape())
+		res.setY(loc.getY() + 1);
 		return res;
 	}
 	
 	public static Location tryFindForBoat(Location loc, double horRadius) {
-		// TODO watered bottom blocks
-		// TODO smarter function for boats:
-		//      fill one square grid, then check player loc
-		//      and iterate squares on smaller grid(0.5 block) to find the nearest place to spawn
-		loc.add(0, 0.5, 0);
-		loc.setY(Math.floor(loc.getY() - 1));
-		
+		// TODO watered bottom blocks: boats go down to 8/16--9/16, but can move on chests
 		Location res = findNearest_2x2_3x3(loc, horRadius, PREDICATE_BOAT);
 		if (res != null)
 			res.add(0, 1, 0);
@@ -137,11 +134,9 @@ public class SummonUtils
 	}
 
 	public static Location tryFindForHorse(Location loc, double horRadius) {
-		loc = loc.add(0, -1, 0);
 		Location res = findNearest_2x2_3x3(loc, horRadius, PREDICATE_HORSE);
 		if (res == null)
 			return null;
-		res.setY(loc.getY() + 1);
 		return res;
 	}
 	public static Horse summonHorse(Location l, Player p) {
@@ -267,5 +262,13 @@ public class SummonUtils
 			p.getInventory().setItemInMainHand(tome);
 		else
 			p.getInventory().setItemInOffHand(tome);
+	}
+	
+	// TODO check actual height using loc.getBlock().getCollisionShape()
+	// for blocks player intersect using player.getWidth()
+	private static void setGroundY(Location loc) {
+		
+		loc.setY(Math.floor(loc.getY() - 0.5));
+		//loc.setY(Math.floor(loc.getY() - (0.0625 - 0.0001))); // 0.0625 is carpet height
 	}
 }
