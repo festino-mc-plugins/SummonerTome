@@ -51,7 +51,13 @@ public class TomeClickHandler implements Listener
 	private InteractResult getSwapResult(PlayerInteractEntityEvent event)
 	{
 		InteractResult res = new InteractResult(false, true);
+		Entity entity = event.getRightClicked();
 		Player player = event.getPlayer();
+		boolean entityIsSummoned = SummonUtils.wasSummoned(entity);
+		if (entityIsSummoned) {
+			// disable nametags, breeding, etc
+			event.setCancelled(true);
+		}
 		
 		boolean mainHand = true;
 		ItemStack item = player.getInventory().getItemInMainHand();
@@ -70,14 +76,8 @@ public class TomeClickHandler implements Listener
 		if (!player.hasPermission(Permissions.USE))
 			return res;
 		
-		Entity entity = event.getRightClicked();
-		if (SummonUtils.wasSummoned(entity)) {
-			if (entity.getPassengers().size() > 0) {
-				// disable nametags, breeding, etc
-				event.setCancelled(true);
-			}
+		if (entityIsSummoned)
 			return res;
-		}
 		if (SummonUtils.hasSummoned(item))
 			return res;
 		
