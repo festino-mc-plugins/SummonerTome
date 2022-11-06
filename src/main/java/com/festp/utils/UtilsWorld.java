@@ -42,13 +42,13 @@ public class UtilsWorld
 	}
 	
 	/** Try find nearest NxN area player can fly with at least one required block */
-	public static Location searchArea_NxN(Location loc, int N, double horRadius, Predicate<Block> predicate)
+	public static Location searchArea_NxN(Location loc, final int N, double horRadius, Predicate<Block> predicate)
 	{
 		// fill the integer grid: 0, 1, 2
 		// check areas: product is >= 2
 		// calculate distance, find minimal
 		// return area center if found
-		Block startBlock = loc.getBlock();
+		final Block startBlock = loc.getBlock();
 		int radius = (int)Math.ceil(horRadius) + (N + 1) / 2;
 		int horRadiusSquared = (int) Math.ceil(horRadius * horRadius);
 		int width = radius * 2 + 1;
@@ -71,6 +71,21 @@ public class UtilsWorld
 						grid[x][y][z] += predicate.test(b) ? 1 : 0;
 				}
 		Location foundLoc = null;
+		
+		boolean isInitLocValid = true;
+		int minX = (int)Math.floor(loc.getX() - 0.5 * N) - startBlock.getX();
+		int minZ = (int)Math.floor(loc.getZ() - 0.5 * N) - startBlock.getZ();
+		int maxX = (int)Math.ceil(loc.getX() + 0.5 * N) - startBlock.getX();
+		int maxZ = (int)Math.ceil(loc.getZ() + 0.5 * N) - startBlock.getZ();
+		int product = 1;
+		for (int dz = minZ; dz < maxZ; dz++)
+			for (int dx = minX; dx < maxX; dx++)
+				product *= grid[radius + dx][vertRadius][radius + dz];
+		if (product < 2)
+			isInitLocValid = false;
+		if (isInitLocValid)
+			return loc;
+		
 		double distSquared = horRadiusSquared;
 		for (int dz = -radius + N; dz <= radius; dz++)
 			for (int dy = -vertRadius; dy <= vertRadius; dy++)
@@ -79,7 +94,7 @@ public class UtilsWorld
 					int x = dx + radius;
 					int y = dy + vertRadius;
 					int z = dz + radius;
-					int product = 1;
+					product = 1;
 					for (int j = -N; j < 0; j++)
 						for (int i = -N; i < 0; i++)
 							product *= grid[x + i][y][z + j];
