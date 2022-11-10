@@ -29,11 +29,11 @@ public class SummonerTome
         if (!isTome(item))
     		return null;
     	String data = TomeItemBuilder.getTag(item);
-		return new SummonerTome(TomeFormatter.deserialize(data));
+		return new SummonerTome(TomeSerializer.deserialize(data));
 	}
 	public ItemStack setTome(ItemStack item)
 	{
-		String data = TomeFormatter.serialize(components);
+		String data = TomeSerializer.serialize(components);
 		return TomeItemBuilder.setTag(item, data);
 	}
 

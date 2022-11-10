@@ -25,7 +25,7 @@ public class ComponentManager
 	public void register(IComponentFactory factory, ComponentInfo info)
 	{
 		String code = factory.getCode();
-		if (!TomeFormatter.canSerialize(code))
+		if (!TomeSerializer.canSerialize(code))
 			throw new IllegalArgumentException("Couldn't register code \"" + code + "\"");
 		for (IComponentFactory component : components)
 			if (code.equalsIgnoreCase(component.getCode()))

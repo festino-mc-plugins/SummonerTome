@@ -2,7 +2,7 @@ package com.festp.tome;
 
 import com.festp.components.ITomeComponent;
 
-public class TomeFormatter // TODO rename (TomeSerializer?)
+public class TomeSerializer
 {
 	private static final String CODE_DELIMITER = ", ";
 	private static final String CODE_DATA_DELIMITER = "|";
@@ -12,7 +12,7 @@ public class TomeFormatter // TODO rename (TomeSerializer?)
 	
 	private static ComponentManager componentManager;
 	public static void setComponentManager(ComponentManager componentManager) {
-		TomeFormatter.componentManager = componentManager;
+		TomeSerializer.componentManager = componentManager;
 	}
 	
 	public static ITomeComponent[] deserialize(String data)

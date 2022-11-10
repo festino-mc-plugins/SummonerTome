@@ -19,7 +19,7 @@ import com.festp.handlers.TomeInventoryHandler;
 import com.festp.tome.ComponentInfo;
 import com.festp.tome.ComponentManager;
 import com.festp.tome.SimpleComponentFactory;
-import com.festp.tome.TomeFormatter;
+import com.festp.tome.TomeSerializer;
 import com.festp.utils.NBTUtils;
 
 public class Main extends JavaPlugin
@@ -47,7 +47,7 @@ public class Main extends JavaPlugin
     	componentManager.stopRegisterAsNative();
 
     	// bad design?
-    	TomeFormatter.setComponentManager(componentManager);
+    	TomeSerializer.setComponentManager(componentManager);
     	TomeItemBuilder.setComponentManager(componentManager);
     	
     	craftManager = new CraftManager(this, getServer(), componentManager);
