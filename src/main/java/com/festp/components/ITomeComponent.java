@@ -8,7 +8,7 @@ import org.bukkit.entity.Player;
 
 public interface ITomeComponent
 {
-	public char getCode();
+	public String getCode();
 	public int getPriority();
 	public String serialize();
 	public void deserialize(String data);

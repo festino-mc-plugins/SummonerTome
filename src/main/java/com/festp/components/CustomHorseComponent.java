@@ -11,11 +11,11 @@ public class CustomHorseComponent implements ITomeComponent
 {
 	private static final double SEARCHING_RADIUS = 1.5;
 	private static final String SERIALIZATION_NO_HORSE_DATA = "null";
-	public static final char CODE = 'H';
+	public static final String CODE = "custom_horse";
 	
 	private HorseFormat horseData;
 	
-	public char getCode() {
+	public String getCode() {
 		return CODE;
 	}
 	

@@ -9,9 +9,9 @@ import com.festp.utils.SummonUtils;
 public class HorseComponent implements ITomeComponent
 {
 	private static final double SEARCHING_RADIUS = 1.5;
-	public static final char CODE = 'h';
+	public static final String CODE = "horse";
 	
-	public char getCode() {
+	public String getCode() {
 		return CODE;
 	}
 	

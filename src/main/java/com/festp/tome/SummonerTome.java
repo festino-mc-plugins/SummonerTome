@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import com.festp.components.ITomeComponent;
+import com.festp.crafting.TomeItemBuilder;
 
 public class SummonerTome
 {
@@ -104,10 +105,23 @@ public class SummonerTome
 				return clazz.cast(comp);
 		return null;
 	}
-
 	public <T extends ITomeComponent> boolean hasComponent(Class<T> clazz)
 	{
 		return getComponent(clazz) != null;
+	}
+	
+	/** @return null if there is no component of the desired code */
+	public ITomeComponent getComponent(String code)
+	{
+		for (ITomeComponent comp : components)
+			if (comp.getCode().equalsIgnoreCase(code))
+				return comp;
+		return null;
+	}
+
+	public <T extends ITomeComponent> boolean hasComponent(String code)
+	{
+		return getComponent(code) != null;
 	}
 
 	public void replace(Class<? extends ITomeComponent> replacingClass, ITomeComponent newComponent) {

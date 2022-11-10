@@ -12,9 +12,9 @@ public class StriderComponent implements ITomeComponent
 {
 	private static final double LAVA_SEARCHING_RADIUS = 2.5;
 	private static final double SEARCHING_RADIUS = 2.5;
-	public static final char CODE = 's';
+	public static final String CODE = "strider";
 	
-	public char getCode() {
+	public String getCode() {
 		return CODE;
 	}
 	

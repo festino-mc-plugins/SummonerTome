@@ -120,10 +120,7 @@ public class SummonUtils
 	
 	public static Location tryFindForBoat(Location loc, double horRadius) {
 		// TODO watered bottom blocks: boats go down to 8/16--9/16, but can move on chests
-		Location res = findNearest_2x2_3x3(loc, horRadius, PREDICATE_BOAT);
-		if (res != null)
-			res.add(0, 1, 0);
-		return res;
+		return findNearest_2x2_3x3(loc, horRadius, PREDICATE_BOAT);
 	}
 	public static Boat summonBoat(Location l, Player p, BoatData boatData) {
 		l.setDirection(p.getLocation().getDirection());
@@ -135,10 +132,7 @@ public class SummonUtils
 	}
 
 	public static Location tryFindForHorse(Location loc, double horRadius) {
-		Location res = findNearest_2x2_3x3(loc, horRadius, PREDICATE_HORSE);
-		if (res == null)
-			return null;
-		return res;
+		return findNearest_2x2_3x3(loc, horRadius, PREDICATE_HORSE);
 	}
 	public static Horse summonHorse(Location l, Player p) {
 		l.setDirection(p.getLocation().getDirection());

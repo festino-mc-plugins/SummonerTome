@@ -14,9 +14,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
 import com.festp.Permissions;
-import com.festp.tome.TomeItemBuilder;
-import com.festp.tome.TomeType;
-import com.google.common.collect.Lists;
+import com.festp.components.ITomeComponent;
+import com.festp.crafting.TomeItemBuilder;
+import com.festp.tome.ComponentManager;
+import com.festp.tome.MissingComponent;
 
 public class MainCommand  implements CommandExecutor, TabCompleter
 {
@@ -29,40 +30,43 @@ public class MainCommand  implements CommandExecutor, TabCompleter
 	
 	private final static String NO_PERM = ChatColor.RED + "You must have " + ChatColor.WHITE + "%s" + ChatColor.RED + " permission to perform this command.";
 	private final static String NO_PLAYER = ChatColor.RED + "You must be a player to perform this command.";
+	private final static String NO_ITEM = ChatColor.RED + "Couldn't give the tome item, wrong type: %s";
 	private final static String NO_SPACE = ChatColor.RED + "There are no space in the inventory.";
 	
-	List<String> enNames = new ArrayList<>();
+	ComponentManager componentManager;
 	
-	public MainCommand() {
+	List<String> names = new ArrayList<>();
+	
+	public MainCommand(ComponentManager componentManager) {
+		this.componentManager = componentManager;
 		// TODO localization
-		// TODO if 1.15-, remove "strider"
-		enNames = Lists.asList("", new String[] { "minecart", "boat", "strider", "pig", "horse", "custom_horse", "all", "custom_all" });
+		names.add("all");
+		names.add("custom_all");
+		for (String name : componentManager.getLoadedComponents())
+			names.add(name);
 	}
 
-	// TODO any combination of vehicles
-	// all/custom_all or <list>, e.g. "minecart, boat" / "minecart boat"
-	private static ItemStack getItem(String name)
+	// all/custom_all or <list>, e.g. "minecart, boat"
+	private ItemStack getItem(String str)
 	{
-		name = name.toLowerCase();
-		ItemStack item = null;
-		if (name.equalsIgnoreCase("minecart")) {
-			item = TomeItemBuilder.getNewTome(TomeType.MINECART);
-		} else if (name.equalsIgnoreCase("boat")) {
-			item = TomeItemBuilder.getNewTome(TomeType.BOAT);
-		} else if (name.equalsIgnoreCase("strider")) {
-			item = TomeItemBuilder.getNewTome(TomeType.STRIDER);
-		} else if (name.equalsIgnoreCase("pig")) {
-			item = TomeItemBuilder.getNewTome(TomeType.PIG);
-		} else if (name.equalsIgnoreCase("horse")) {
-			item = TomeItemBuilder.getNewTome(TomeType.HORSE);
-		} else if (name.equalsIgnoreCase("custom_horse")) {
-			item = TomeItemBuilder.getNewTome(TomeType.CUSTOM_HORSE);
-		} else if (name.equalsIgnoreCase("all")) {
-			item = TomeItemBuilder.getNewTome(TomeType.getAll());
-		} else if (name.equalsIgnoreCase("custom_all")) {
-			item = TomeItemBuilder.getNewTome(TomeType.getCustomAll());
+		str = str.toLowerCase();
+		String[] componentNames;
+		if (str.equalsIgnoreCase("all")) {
+			componentNames = componentManager.getAll();
+		} else if (str.equalsIgnoreCase("custom_all")) {
+			componentNames = componentManager.getCustomAll();
+		} else {
+			// TODO any combination of vehicles
+			componentNames = new String[] { str };
 		}
-		return item;
+		ITomeComponent[] components = new ITomeComponent[componentNames.length];
+		for (int i = 0; i < componentNames.length; i++) {
+			components[i] = componentManager.fromCode(componentNames[i]);
+			if (components[i] instanceof MissingComponent)
+				return null;
+		}
+		
+		return TomeItemBuilder.getNewTome(components);
 	}
 
 	/** /sumtome {@literal<type>} */
@@ -90,17 +94,21 @@ public class MainCommand  implements CommandExecutor, TabCompleter
 			
 			String name = args[1];
 			ItemStack item = getItem(name);
+			if (item == null) {
+				sender.sendMessage(String.format(NO_ITEM, "not implemented"));
+				return true;
+			}
 			
 			// give item
-			PlayerInventory player_inv = p.getInventory();
-			if (player_inv.getItemInMainHand() == null || player_inv.getItemInMainHand().getType() == Material.AIR)
-				player_inv.setItemInMainHand(item);
-			else if (player_inv.getItemInOffHand() == null || player_inv.getItemInOffHand().getType() == Material.AIR)
-				player_inv.setItemInOffHand(item);
+			PlayerInventory playerInv = p.getInventory();
+			if (playerInv.getItemInMainHand() == null || playerInv.getItemInMainHand().getType() == Material.AIR)
+				playerInv.setItemInMainHand(item);
+			else if (playerInv.getItemInOffHand() == null || playerInv.getItemInOffHand().getType() == Material.AIR)
+				playerInv.setItemInOffHand(item);
 			else {
 				for (int i = 0; i < 36; i++) {
-					if (player_inv.getItem(i) == null) {
-						player_inv.setItem(i, item);
+					if (playerInv.getItem(i) == null) {
+						playerInv.setItem(i, item);
 						return true;
 					}
 				}
@@ -147,13 +155,13 @@ public class MainCommand  implements CommandExecutor, TabCompleter
 			options.add(SUBCOMMAND_GET);
 		}
 		
-		if (args.length == 2)
+		if (args.length >= 2)
 		{
 			if (args[0].equalsIgnoreCase(SUBCOMMAND_GET)) {
 				String arg = args[1].toLowerCase();
-				for (String itemName : enNames)
-					if (itemName.contains(arg))
-						options.add(itemName);
+				for (String componentName : names)
+					if (componentName.contains(arg))
+						options.add(componentName);
 			}
 		}
 		return options;

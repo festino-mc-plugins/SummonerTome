@@ -9,9 +9,9 @@ import com.festp.utils.SummonUtils;
 public class MinecartComponent implements ITomeComponent
 {
 	private static final double RAIL_SEARCHING_RADIUS = 1.5;
-	public static final char CODE = 'm';
+	public static final String CODE = "minecart";
 	
-	public char getCode() {
+	public String getCode() {
 		return CODE;
 	}
 	

@@ -1,7 +1,6 @@
-package com.festp.handlers;
+package com.festp.crafting;
 
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
 
 import org.bukkit.Bukkit;
@@ -18,7 +17,6 @@ import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import com.festp.CraftManager;
 import com.festp.Main;
 import com.festp.Permissions;
 import com.festp.components.BoatComponent;
@@ -27,9 +25,11 @@ import com.festp.components.CustomHorseComponent;
 import com.festp.components.HorseComponent;
 import com.festp.components.HorseFormat;
 import com.festp.components.ITomeComponent;
+import com.festp.components.MinecartComponent;
+import com.festp.components.PigComponent;
+import com.festp.components.StriderComponent;
+import com.festp.tome.ComponentManager;
 import com.festp.tome.SummonerTome;
-import com.festp.tome.TomeItemBuilder;
-import com.festp.tome.TomeType;
 import com.festp.utils.Utils;
 import com.festp.utils.UtilsRandom;
 
@@ -37,14 +37,17 @@ public class TomeCraftHandler implements Listener
 {
 	private Main plugin;
 	private CraftManager craftManager;
+	private ComponentManager componentManager;
+	
 	private Recipe boatRecipe;
 	private Recipe customHorseRecipe;
 	private Recipe combineRecipe;
 	
-	public TomeCraftHandler(Main plugin, CraftManager craftManager)
+	public TomeCraftHandler(Main plugin, CraftManager craftManager, ComponentManager componentManager)
 	{
 		this.plugin = plugin;
 		this.craftManager = craftManager;
+		this.componentManager = componentManager;
 	}
 	
 	public void addTomeCrafts()
@@ -55,14 +58,14 @@ public class TomeCraftHandler implements Listener
     	NamespacedKey key_pig = new NamespacedKey(plugin, "pig_tome");
     	NamespacedKey key_horse = new NamespacedKey(plugin, "horse_tome");
 		
-    	ItemStack minecartBook = TomeItemBuilder.getNewTome(EnumSet.of(TomeType.MINECART));
+    	ItemStack minecartBook = TomeItemBuilder.getNewTome(componentManager.fromCode(MinecartComponent.CODE));
     	ShapelessRecipe minecartRecipe = new ShapelessRecipe(key_minecart, minecartBook);
     	minecartRecipe.addIngredient(3, Material.MINECART);
     	minecartRecipe.addIngredient(3, Material.EXPERIENCE_BOTTLE);
     	minecartRecipe.addIngredient(1, Material.BOOK);
     	craftManager.addRecipe(key_minecart, minecartRecipe);
 		
-    	ItemStack boatBook = TomeItemBuilder.getNewTome(EnumSet.of(TomeType.BOAT));
+    	ItemStack boatBook = TomeItemBuilder.getNewTome(componentManager.fromCode(BoatComponent.CODE));
     	ShapelessRecipe boatRecipe = new ShapelessRecipe(key_boat, boatBook);
     	RecipeChoice.MaterialChoice boatChoice = new RecipeChoice.MaterialChoice(BoatData.getSupportedBoats());
     	boatRecipe.addIngredient(boatChoice);
@@ -73,7 +76,7 @@ public class TomeCraftHandler implements Listener
     	craftManager.addRecipe(key_boat, boatRecipe);
     	this.boatRecipe = boatRecipe;
     	
-    	ItemStack striderBook = TomeItemBuilder.getNewTome(EnumSet.of(TomeType.STRIDER));
+    	ItemStack striderBook = TomeItemBuilder.getNewTome(componentManager.fromCode(StriderComponent.CODE));
     	ShapelessRecipe striderRecipe = new ShapelessRecipe(key_strider, striderBook);
     	striderRecipe.addIngredient(1, Material.SADDLE);
     	striderRecipe.addIngredient(1, Material.LAVA_BUCKET);
@@ -82,7 +85,7 @@ public class TomeCraftHandler implements Listener
     	striderRecipe.addIngredient(1, Material.BOOK);
     	craftManager.addRecipe(key_strider, striderRecipe);
     	
-    	ItemStack pigBook = TomeItemBuilder.getNewTome(EnumSet.of(TomeType.PIG));
+    	ItemStack pigBook = TomeItemBuilder.getNewTome(componentManager.fromCode(PigComponent.CODE));
     	ShapelessRecipe pigRecipe = new ShapelessRecipe(key_pig, pigBook);
     	pigRecipe.addIngredient(1, Material.SADDLE);
     	pigRecipe.addIngredient(1, Material.PORKCHOP);
@@ -92,7 +95,7 @@ public class TomeCraftHandler implements Listener
     	craftManager.addRecipe(key_pig, pigRecipe);
     	
     	// unwearable armor, untakeable saddle
-    	ItemStack horseBook = TomeItemBuilder.getNewTome(EnumSet.of(TomeType.HORSE));
+    	ItemStack horseBook = TomeItemBuilder.getNewTome(componentManager.fromCode(HorseComponent.CODE));
     	ShapelessRecipe horseRecipe = new ShapelessRecipe(key_horse, horseBook);
     	horseRecipe.addIngredient(1, Material.SADDLE);
     	horseRecipe.addIngredient(1, Material.LEATHER);
@@ -112,7 +115,7 @@ public class TomeCraftHandler implements Listener
     	RecipeChoice.ExactChoice horseTomeChoice = new RecipeChoice.ExactChoice(horseBook);
     	
     	// in craft events because of Horse tome
-    	ItemStack customHorseBook = TomeItemBuilder.getNewTome(EnumSet.of(TomeType.CUSTOM_HORSE));
+    	ItemStack customHorseBook = TomeItemBuilder.getNewTome(componentManager.fromCode(CustomHorseComponent.CODE));
     	ShapelessRecipe customHorseRecipe = new ShapelessRecipe(key_customHorse, customHorseBook);
     	customHorseRecipe.addIngredient(1, Material.NAME_TAG);
     	customHorseRecipe.addIngredient(1, Material.GOLDEN_APPLE);
@@ -127,7 +130,8 @@ public class TomeCraftHandler implements Listener
     	RecipeChoice.ExactChoice tome1Choice = new RecipeChoice.ExactChoice(ingredientTomes[0]);
     	RecipeChoice.ExactChoice tome2Choice = new RecipeChoice.ExactChoice(ingredientTomes[1]);
     	
-    	ItemStack combinedBook = TomeItemBuilder.getNewTome(EnumSet.of(TomeType.MINECART, TomeType.BOAT));
+    	ItemStack combinedBook = TomeItemBuilder.getNewTome(new ITomeComponent[] {
+    			componentManager.fromCode(MinecartComponent.CODE), componentManager.fromCode(BoatComponent.CODE) });
     	ShapelessRecipe combineRecipe = new ShapelessRecipe(key_combine, combinedBook);
     	combineRecipe.addIngredient(tome1Choice);
     	combineRecipe.addIngredient(1, Material.EXPERIENCE_BOTTLE);
@@ -267,14 +271,9 @@ public class TomeCraftHandler implements Listener
 		return true;
 	}
 
-	// TODO scalable system (may be ITomeComponent#isCompatible(ITomeComponent)) 
 	public boolean isCompatible(ITomeComponent comp1, ITomeComponent comp2)
 	{
-		if (comp1.getClass() == comp2.getClass())
-			return false;
-		boolean horseComp1 = comp1 instanceof HorseComponent || comp1 instanceof CustomHorseComponent;
-		boolean horseComp2 = comp2 instanceof HorseComponent || comp2 instanceof CustomHorseComponent;
-		return !(horseComp1 && horseComp2);
+		return componentManager.isCompatible(comp1, comp2);
 	}
 	
 	// TODO new comparing method; Bukkit creates a new recipe every time; no .getKey()?

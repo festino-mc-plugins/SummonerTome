@@ -1,8 +1,7 @@
-package com.festp.tome;
+package com.festp.crafting;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.EnumSet;
 import java.util.List;
 
 import org.bukkit.Material;
@@ -12,6 +11,8 @@ import org.bukkit.inventory.meta.Repairable;
 import com.festp.components.CustomHorseComponent;
 import com.festp.components.HorseFormat;
 import com.festp.components.ITomeComponent;
+import com.festp.tome.ComponentManager;
+import com.festp.tome.SummonerTome;
 import com.festp.utils.NBTUtils;
 
 public class TomeItemBuilder
@@ -19,27 +20,27 @@ public class TomeItemBuilder
 	private static final int REPAIR_COST = 1000;
 	private static final String TOME_NBT_KEY = "summonertome";
 
-	public static final String NAME_CUSTOM_HORSE = "Advanced %s";
 	public static final String NAME_ALL_TEMPLATE = "United tome";
 	public static final String NAME_MIXED_TEMPLATE = "Combined tome";
 	public static final String NAME_ONE_TYPE_TEMPLATE = "%s tome";
 	public static final String LORE_SEP = ", ";
 	public static final String LORE_OR = " or ";
 	public static final String LORE_TEMPLATE = "Summons %s";
-	public static final String EN_NAME_CUSTOM_ALL =  "Advanced united tome";
-	public static final String EN_LORE_CUSTOM_ALL =  "Summons minecart, boat or custom horse";
-
-	public static ItemStack getNewTome(TomeType type)
-	{
-		return getNewTome(EnumSet.of(type));
+	
+	private static ComponentManager componentManager;
+	public static void setComponentManager(ComponentManager componentManager) {
+		TomeItemBuilder.componentManager = componentManager;
 	}
-	public static ItemStack getNewTome(EnumSet<TomeType> typeSet)
+	
+	public static ItemStack getNewTome(ITomeComponent component)
+	{
+    	return getNewTome(new ITomeComponent[] { component });
+	}
+	public static ItemStack getNewTome(ITomeComponent[] components)
 	{
     	ItemStack tome = new ItemStack(Material.ENCHANTED_BOOK);
-		TomeType[] types = typeSet.toArray(new TomeType[0]);
-		ITomeComponent[] components = new ITomeComponent[types.length];
-		for (int i = 0; i < types.length; i++) {
-			components[i] = types[i].getComponent();
+    	// TODO rework init on create!
+		for (int i = 0; i < components.length; i++) {
 			if (components[i] instanceof CustomHorseComponent)
 				((CustomHorseComponent)components[i]).setHorseData(HorseFormat.generate());
 		}
@@ -48,47 +49,56 @@ public class TomeItemBuilder
 	
 	public static ItemStack applyTome(ItemStack tome, SummonerTome newTome)
 	{
-		TomeType[] allTypes = TomeType.values();
-		EnumSet<TomeType> excludingTypes = EnumSet.allOf(TomeType.class);
-		String customHorseStr = "%s";
-		List<TomeType> types = new ArrayList<>();
-		for (int i = 0; i < allTypes.length; i++)
+		String[] allComponents = componentManager.getLoadedComponents();
+		String format = "%s";
+		List<String> codes = new ArrayList<>();
+		for (int i = 0; i < allComponents.length; i++)
 		{
-			TomeType type = allTypes[i];
-			if (!newTome.hasComponent(type.getComponentClass()))
+			String code = allComponents[i];
+			if (!newTome.hasComponent(code))
 				continue;
 			
-			if (type == TomeType.CUSTOM_HORSE)
-				customHorseStr = NAME_CUSTOM_HORSE;
-			excludingTypes.remove(type);
+			String componentFormat = componentManager.getInfo(code).tomeNameFormat;
+			if (componentFormat != null)
+				format = String.format(componentFormat, format);
 
-			types.add(type);
+			codes.add(code);
 		}
+		boolean isAnyAllTome = codes.size() == componentManager.getAll().length;
 		StringBuilder list = new StringBuilder();
-		for (int i = 0; i < types.size(); i++)
+		for (int i = 0; i < codes.size(); i++)
 		{
 			if (i > 0) {
-				if (i == types.size() - 1)
+				if (i == codes.size() - 1)
 					list.append(LORE_OR);
 				else
 					list.append(LORE_SEP);
 			}
-			list.append(getForLore(types.get(i)));
+			String loreName = componentManager.getInfo(codes.get(i)).lorePetName;
+			list.append(loreName);
 		}
 		String lore = String.format(LORE_TEMPLATE, list);
+		
 		String name;
-		if (types.size() == 1) {
-			String entityName = getForName(types.get(0));
-			entityName = Character.toUpperCase(entityName.charAt(0)) + entityName.substring(1);
-			name = String.format(NAME_ONE_TYPE_TEMPLATE, entityName);
-		}
-		else if (excludingTypes.size() == 1) { // error if both HORSE and CUSTOM_HORSE
+		boolean decorateName = true;
+		if (codes.size() == 1) {
+			name = componentManager.getInfo(codes.get(0)).soloTomeName;
+			if (name != null) {
+				decorateName = false;
+			} else {
+				String loreName = componentManager.getInfo(codes.get(0)).lorePetName;
+				String entityName = String.format(NAME_ONE_TYPE_TEMPLATE, capitalize(loreName.toLowerCase()));
+				entityName = Character.toUpperCase(entityName.charAt(0)) + entityName.substring(1);
+				name = String.format(NAME_ONE_TYPE_TEMPLATE, entityName);
+			}
+		} else if (isAnyAllTome) {
 			name = NAME_ALL_TEMPLATE;
-		}
-		else {
+		} else {
 			name = NAME_MIXED_TEMPLATE;
 		}
-		name = String.format(customHorseStr, name);
+		if (decorateName) {
+			name = String.format(format, name);
+		}
 		
     	Repairable rmeta = (Repairable) tome.getItemMeta();
     	rmeta.setRepairCost(REPAIR_COST);
@@ -97,18 +107,6 @@ public class TomeItemBuilder
     	tome.setItemMeta(rmeta);
     	tome = newTome.setTome(tome);
     	return tome;
-	}
-	
-	private static String getForName(TomeType type)
-	{
-		if (type == TomeType.CUSTOM_HORSE)
-			return getForName(TomeType.HORSE);
-		return getForLore(type);
-	}
-	private static String getForLore(TomeType type)
-	{
-		// TODO configurable names
-		return type.name().replace('_', ' ').toLowerCase();
 	}
 
 	public static boolean hasTag(ItemStack item) {
@@ -121,5 +119,11 @@ public class TomeItemBuilder
 
 	public static ItemStack setTag(ItemStack item, String data) {
 		return NBTUtils.setString(item, TOME_NBT_KEY, data);
+	}
+	
+	private static String capitalize(String str) {
+		if (str.length() == 0)
+			return str;
+		return str.substring(0, 1).toUpperCase() + str.substring(1);
 	}
 }

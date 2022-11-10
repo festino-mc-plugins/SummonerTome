@@ -11,9 +11,9 @@ import com.festp.utils.Utils;
 public class PigComponent implements ITomeComponent
 {
 	private static final double SEARCHING_RADIUS = 2.5;
-	public static final char CODE = 'p';
+	public static final String CODE = "pig";
 	
-	public char getCode() {
+	public String getCode() {
 		return CODE;
 	}
 	

@@ -1,4 +1,4 @@
-package com.festp;
+package com.festp.crafting;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +12,8 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.plugin.PluginManager;
 
-import com.festp.handlers.TomeCraftHandler;
+import com.festp.Main;
+import com.festp.tome.ComponentManager;
 
 public class CraftManager implements Listener {
 	public enum CraftTag { KEEP_DATA, ONLY_SPECIFIC };
@@ -23,10 +24,10 @@ public class CraftManager implements Listener {
 	
 	List<NamespacedKey> recipeKeys = new ArrayList<>();
 	
-	public CraftManager(Main plugin, Server server) {
+	public CraftManager(Main plugin, Server server, ComponentManager componentManager) {
 		this.plugin = plugin;
 		this.server = server;
-    	this.craftHandler = new TomeCraftHandler(plugin, this);
+    	this.craftHandler = new TomeCraftHandler(plugin, this, componentManager);
 	}
 
 	public void registerEvents(PluginManager pm) {

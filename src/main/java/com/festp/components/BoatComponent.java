@@ -9,11 +9,11 @@ import com.festp.utils.SummonUtils;
 public class BoatComponent implements ITomeComponent
 {
 	private static final double BOAT_SEARCHING_RADIUS = 2.5;
-	public static final char CODE = 'b';
+	public static final String CODE = "boat";
 
 	BoatData boatData = new BoatData();
 	
-	public char getCode() {
+	public String getCode() {
 		return CODE;
 	}
 	
