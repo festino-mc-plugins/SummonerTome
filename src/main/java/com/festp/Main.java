@@ -21,6 +21,7 @@ import com.festp.tome.ComponentManager;
 import com.festp.tome.SimpleComponentFactory;
 import com.festp.tome.TomeSerializer;
 import com.festp.utils.NBTUtils;
+import com.festp.utils.UtilsVersion;
 
 public class Main extends JavaPlugin
 {
@@ -42,8 +43,8 @@ public class Main extends JavaPlugin
     	componentManager.register(new SimpleComponentFactory(PigComponent.class));
     	componentManager.register(new SimpleComponentFactory(HorseComponent.class));
     	componentManager.register(new CustomHorseComponentFactory(), new ComponentInfo("custom horse", "Advanced %s", "Advanced horse tome"));
-		// TODO if 1.15-, remove "strider" (add UtilsVesrion)
-    	componentManager.register(new SimpleComponentFactory(StriderComponent.class));
+    	if (UtilsVersion.SUPPORTS_STRIDER)
+    		componentManager.register(new SimpleComponentFactory(StriderComponent.class));
     	componentManager.stopRegisterAsNative();
 
     	// bad design?

@@ -7,15 +7,14 @@ import org.bukkit.entity.ChestBoat;
 import org.bukkit.inventory.ItemStack;
 
 import com.festp.inventory.InventorySerializer;
-import com.festp.utils.Utils;
+import com.festp.utils.UtilsVersion;
 
 public class BoatData
 {
-	private static final boolean SUPPORTS_CHEST_AND_MANGROVE = Utils.GetVersion() >= 11900;
 	private static final IBoatDataConverter CONVERTER = getConverter();
 	
 	private static IBoatDataConverter getConverter() {
-		if (SUPPORTS_CHEST_AND_MANGROVE)
+		if (UtilsVersion.SUPPORTS_CHEST_AND_MANGROVE)
 			return new BoatDataConverter1_19();
 		else
 			return new BoatDataConverter1_18();
@@ -78,13 +77,13 @@ public class BoatData
 	}
 
 	private static boolean getIsChested(Material m) {
-		if (!SUPPORTS_CHEST_AND_MANGROVE)
+		if (!UtilsVersion.SUPPORTS_CHEST_AND_MANGROVE)
 			return false;
 		return Tag.ITEMS_CHEST_BOATS.isTagged(m);
 	}
 	
 	private static Material getChestless(Material m) {
-		if (!SUPPORTS_CHEST_AND_MANGROVE)
+		if (!UtilsVersion.SUPPORTS_CHEST_AND_MANGROVE)
 			return m;
 		
 		if (m == Material.ACACIA_CHEST_BOAT)
@@ -117,7 +116,7 @@ public class BoatData
 			return 'o';
 		if (material == Material.SPRUCE_BOAT)
 			return 's';
-		if (SUPPORTS_CHEST_AND_MANGROVE) {
+		if (UtilsVersion.SUPPORTS_CHEST_AND_MANGROVE) {
 			if (material == Material.MANGROVE_BOAT)
 				return 'm';
 		}
@@ -137,7 +136,7 @@ public class BoatData
 			return Material.OAK_BOAT;
 		if (c == 's')
 			return Material.SPRUCE_BOAT;
-		if (SUPPORTS_CHEST_AND_MANGROVE) {
+		if (UtilsVersion.SUPPORTS_CHEST_AND_MANGROVE) {
 			if (c == 'm')
 				return Material.MANGROVE_BOAT;
 		}
