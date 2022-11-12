@@ -14,6 +14,8 @@ public class ComponentManager
 	private final List<IComponentFactory> components = new ArrayList<>();
 	private final List<ComponentInfo> componentInfo = new ArrayList<>();
 	
+	private boolean softDependenciesMode = true;
+	
 	public void stopRegisterAsNative() {
 		registerNativeComponents = false;
 	}
@@ -88,10 +90,10 @@ public class ComponentManager
 	public boolean isCompatible(ITomeComponent comp1, ITomeComponent comp2) {
 		IComponentFactory fact1 = tryFind(comp1.getCode());
 		if (fact1 == null)
-			return false; // TODO return true if soft
+			return softDependenciesMode;
 		IComponentFactory fact2 = tryFind(comp2.getCode());
 		if (fact2 == null)
-			return false; // TODO return true if soft
+			return softDependenciesMode;
 		
 		for (String code : fact1.getIncompatibleComponents())
 			if (code.equalsIgnoreCase(comp2.getCode()))
