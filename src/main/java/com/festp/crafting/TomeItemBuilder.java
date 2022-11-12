@@ -8,8 +8,6 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Repairable;
 
-import com.festp.components.CustomHorseComponent;
-import com.festp.components.HorseFormat;
 import com.festp.components.ITomeComponent;
 import com.festp.tome.ComponentManager;
 import com.festp.tome.SummonerTome;
@@ -39,10 +37,9 @@ public class TomeItemBuilder
 	public static ItemStack getNewTome(ITomeComponent[] components)
 	{
     	ItemStack tome = new ItemStack(Material.ENCHANTED_BOOK);
-    	// TODO rework init on create!
+    	// recreate all components (just in case there is random)
 		for (int i = 0; i < components.length; i++) {
-			if (components[i] instanceof CustomHorseComponent)
-				((CustomHorseComponent)components[i]).setHorseData(HorseFormat.generate());
+			components[i] = componentManager.fromCode(components[i].getCode());
 		}
     	return applyTome(tome, new SummonerTome(components));
 	}

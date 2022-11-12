@@ -18,6 +18,7 @@ import com.festp.components.ITomeComponent;
 import com.festp.crafting.TomeItemBuilder;
 import com.festp.tome.ComponentManager;
 import com.festp.tome.MissingComponent;
+import com.festp.utils.Utils;
 
 public class MainCommand  implements CommandExecutor, TabCompleter
 {
@@ -28,6 +29,9 @@ public class MainCommand  implements CommandExecutor, TabCompleter
 	private final static String COMMAND_EXAMPLES = ChatColor.GRAY + "Example:\n"
 			+ "  /" + COMMAND + " " + SUBCOMMAND_GET + " boat";
 	
+	private final static String CODE_ALL = "all";
+	private final static String CODE_CUSTOM_ALL = "custom_all";
+	
 	private final static String NO_PERM = ChatColor.RED + "You must have " + ChatColor.WHITE + "%s" + ChatColor.RED + " permission to perform this command.";
 	private final static String NO_PLAYER = ChatColor.RED + "You must be a player to perform this command.";
 	private final static String NO_ITEM = ChatColor.RED + "Couldn't give the tome item, wrong type: %s";
@@ -35,41 +39,20 @@ public class MainCommand  implements CommandExecutor, TabCompleter
 	
 	ComponentManager componentManager;
 	
-	List<String> names = new ArrayList<>();
+	List<String> aliases = new ArrayList<>();
 	
 	public MainCommand(ComponentManager componentManager) {
 		this.componentManager = componentManager;
 		// TODO localization
-		names.add("all");
-		names.add("custom_all");
+		// name can't contain spaces
+		aliases.add(CODE_ALL);
+		aliases.add(CODE_CUSTOM_ALL);
 		for (String name : componentManager.getLoadedComponents())
-			names.add(name);
+			if (!name.contains(" "))
+				aliases.add(name);
 	}
 
-	// all/custom_all or <list>, e.g. "minecart, boat"
-	private ItemStack getItem(String str)
-	{
-		str = str.toLowerCase();
-		String[] componentNames;
-		if (str.equalsIgnoreCase("all")) {
-			componentNames = componentManager.getAll();
-		} else if (str.equalsIgnoreCase("custom_all")) {
-			componentNames = componentManager.getCustomAll();
-		} else {
-			// TODO any combination of vehicles
-			componentNames = new String[] { str };
-		}
-		ITomeComponent[] components = new ITomeComponent[componentNames.length];
-		for (int i = 0; i < componentNames.length; i++) {
-			components[i] = componentManager.fromCode(componentNames[i]);
-			if (components[i] instanceof MissingComponent)
-				return null;
-		}
-		
-		return TomeItemBuilder.getNewTome(components);
-	}
-
-	/** /sumtome {@literal<type>} */
+	/** /tome get {@literal<type>} */
 	@EventHandler
 	public boolean onCommand(CommandSender sender, Command cmd, String lbl, String[] args)
 	{
@@ -92,8 +75,7 @@ public class MainCommand  implements CommandExecutor, TabCompleter
 			}
 			Player p = (Player)sender;
 			
-			String name = args[1];
-			ItemStack item = getItem(name);
+			ItemStack item = getItem(getComponentString(args));
 			if (item == null) {
 				sender.sendMessage(String.format(NO_ITEM, "not implemented"));
 				return true;
@@ -158,12 +140,73 @@ public class MainCommand  implements CommandExecutor, TabCompleter
 		if (args.length >= 2)
 		{
 			if (args[0].equalsIgnoreCase(SUBCOMMAND_GET)) {
-				String arg = args[1].toLowerCase();
-				for (String componentName : names)
-					if (componentName.contains(arg))
-						options.add(componentName);
+				String[] components = getComponents(getComponentString(args));
+				String arg = args[args.length - 1].toLowerCase();
+				for (String tomeAlias : aliases)
+					if (tomeAlias.contains(arg)) {
+						if (Utils.containsIgnoreCase(components, tomeAlias))
+							continue;
+						if (tomeAlias == CODE_ALL || tomeAlias == CODE_CUSTOM_ALL) {
+							String[] componentList;
+							if (tomeAlias == CODE_ALL)
+								componentList = componentManager.getAll();
+							else
+								componentList = componentManager.getCustomAll();
+							/*boolean containsList = true;
+							for (String component : componentList)
+								if (!Utils.containsIgnoreCase(components, component))
+									containsList = false;
+							if (containsList)
+								continue;*/
+							boolean intersectsList = false;
+							for (String component : componentList)
+								if (Utils.containsIgnoreCase(components, component))
+									intersectsList = true;
+							if (intersectsList)
+								continue;
+							// may be check incompatible components
+						}
+						options.add(tomeAlias);
+					}
 			}
 		}
 		return options;
+	}
+
+	// all/custom_all or <list>, e.g. "minecart boat"
+	private ItemStack getItem(String str)
+	{
+		str = str.toLowerCase();
+		String[] componentNames;
+		if (str.equalsIgnoreCase(CODE_ALL)) {
+			componentNames = componentManager.getAll();
+		} else if (str.equalsIgnoreCase(CODE_CUSTOM_ALL)) {
+			componentNames = componentManager.getCustomAll();
+		} else {
+			componentNames = getComponents(str);
+		}
+		ITomeComponent[] components = new ITomeComponent[componentNames.length];
+		for (int i = 0; i < componentNames.length; i++) {
+			components[i] = componentManager.fromCode(componentNames[i]);
+			if (components[i] instanceof MissingComponent)
+				return null;
+		}
+		
+		return TomeItemBuilder.getNewTome(components);
+	}
+
+	
+	private static String getComponentString(String[] args) {
+		String res = "";
+		if (args.length >= 2) {
+			res = args[1];
+			for (int i = 2; i < args.length; i++)
+				res += " " + args[i];
+		}
+		return res;
+	}
+	
+	private static String[] getComponents(String str) {
+		return str.split(" ");
 	}
 }

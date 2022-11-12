@@ -23,7 +23,6 @@ import com.festp.components.BoatComponent;
 import com.festp.components.BoatData;
 import com.festp.components.CustomHorseComponent;
 import com.festp.components.HorseComponent;
-import com.festp.components.HorseFormat;
 import com.festp.components.ITomeComponent;
 import com.festp.components.MinecartComponent;
 import com.festp.components.PigComponent;
@@ -106,7 +105,7 @@ public class TomeCraftHandler implements Listener
     	
     	getCustomHorseRecipe(horseBook);
     	getUnitedRecipe(new ItemStack[] { minecartBook, boatBook });
-    	// TODO create personal recipes (when player gets or loses tome)
+    	// TODO create/remove personal recipes (when player gets or loses tome)
 	}
 	
 	private void getCustomHorseRecipe(ItemStack horseBook)
@@ -159,8 +158,8 @@ public class TomeCraftHandler implements Listener
 			
 			String customName = null;
 			boolean correct = true;
-			ItemStack oldTome = null;
-			SummonerTome oldType = null;
+			ItemStack oldItem = null;
+			SummonerTome oldTome = null;
 			int bookCount = 0;
 			for (int i = 0; i < matrix.length; i++)
 			{
@@ -180,10 +179,10 @@ public class TomeCraftHandler implements Listener
 						break;
 					}
 					bookCount++;
-					oldTome = matrix[i];
-					oldType = SummonerTome.getTome(matrix[i]);
-					boolean hasHorse = oldType.hasComponent(HorseComponent.class);
-					boolean hasCustomHorse = oldType.hasComponent(CustomHorseComponent.class);
+					oldItem = matrix[i];
+					oldTome = SummonerTome.getTome(matrix[i]);
+					boolean hasHorse = oldTome.hasComponent(HorseComponent.class);
+					boolean hasCustomHorse = oldTome.hasComponent(CustomHorseComponent.class);
 					if (!hasHorse || hasCustomHorse) {
 						correct = false;
 						break;
@@ -191,19 +190,18 @@ public class TomeCraftHandler implements Listener
 				}
 			}
 			
-			if (correct && oldType != null) {
+			if (correct && oldTome != null) {
 				// TODO identify original tomes, fire inner event
 				CustomHorseComponent horseComp = new CustomHorseComponent();
-				horseComp.setHorseData(HorseFormat.generate());
-				oldType.replace(HorseComponent.class, horseComp);
-				ItemStack newTome = new ItemStack(oldTome);
-				newTome = TomeItemBuilder.applyTome(newTome, oldType);
+				oldTome.replace(HorseComponent.class, horseComp);
+				ItemStack newItem = new ItemStack(oldItem);
+				newItem = TomeItemBuilder.applyTome(newItem, oldTome);
 				if (customName != null) {
-					ItemMeta meta = newTome.getItemMeta();
+					ItemMeta meta = newItem.getItemMeta();
 					meta.setDisplayName(customName);
-					newTome.setItemMeta(meta);
+					newItem.setItemMeta(meta);
 				}
-		    	event.getInventory().setResult(newTome);
+		    	event.getInventory().setResult(newItem);
 			}
 			else {
 				event.getInventory().setResult(null);
@@ -228,13 +226,13 @@ public class TomeCraftHandler implements Listener
 				
 				if (matrix[i].getType() == Material.ENCHANTED_BOOK)
 				{
-					SummonerTome oldType = SummonerTome.getTome(matrix[i]);
-					if (oldType == null || oldType.getComponents().length < 1) {
+					SummonerTome oldTome = SummonerTome.getTome(matrix[i]);
+					if (oldTome == null || oldTome.getComponents().length < 1) {
 						correct = false;
 						break;
 					}
 					
-					for (ITomeComponent compNew : oldType.getComponents())
+					for (ITomeComponent compNew : oldTome.getComponents())
 						for (ITomeComponent compExisting : resComponents)
 							if (!isCompatible(compExisting, compNew))
 							{
@@ -244,16 +242,16 @@ public class TomeCraftHandler implements Listener
 					if (!correct)
 						break;
 					
-					for (ITomeComponent compNew : oldType.getComponents())
+					for (ITomeComponent compNew : oldTome.getComponents())
 						resComponents.add(compNew);
 				}
 			}
 			
 			if (correct) {
 				SummonerTome combinedTome = new SummonerTome(resComponents.toArray(new ITomeComponent[0]));
-		    	ItemStack tome = new ItemStack(Material.ENCHANTED_BOOK);
-		    	tome = TomeItemBuilder.applyTome(tome, combinedTome);
-		    	event.getInventory().setResult(tome);
+		    	ItemStack tomeItem = new ItemStack(Material.ENCHANTED_BOOK);
+		    	tomeItem = TomeItemBuilder.applyTome(tomeItem, combinedTome);
+		    	event.getInventory().setResult(tomeItem);
 			}
 			else {
 				event.getInventory().setResult(null);

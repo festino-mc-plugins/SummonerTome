@@ -83,7 +83,7 @@ public class SummonerTome
 	    int index = -1;
 	    for (int i = 0; i < components.length; i++) {
 	    	ITomeComponent comp = components[i];
-	    	if (comp.getClass() == component.getClass()) { // TODO test if bad condition
+	    	if (comp.getCode().equalsIgnoreCase(component.getCode())) {
 	    		index = i;
 	    		break;
 	    	}

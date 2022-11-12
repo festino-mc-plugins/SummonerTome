@@ -235,7 +235,9 @@ public class TomeInventoryHandler implements Listener
 		return false;
 	}
 	
-	// TODO refactor this code
+	// TODO refactor boat and horse inventory saving
+	// options: IInventorySetter#setData(ItemStack, Entity), register Entity on summon
+	// ban all summoned inventories by default
 	public static ItemStack setHorseData(ItemStack item, HorseFormat horseData)
 	{
 		SummonerTome tome = SummonerTome.getTome(item);

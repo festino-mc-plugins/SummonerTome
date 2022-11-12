@@ -47,7 +47,7 @@ public class Main extends JavaPlugin
     		componentManager.register(new SimpleComponentFactory(StriderComponent.class));
     	componentManager.stopRegisterAsNative();
 
-    	// bad design?
+    	// TODO rework bad design
     	TomeSerializer.setComponentManager(componentManager);
     	TomeItemBuilder.setComponentManager(componentManager);
     	

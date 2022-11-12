@@ -15,6 +15,10 @@ public class CustomHorseComponent implements ITomeComponent
 	
 	private HorseFormat horseData;
 	
+	public CustomHorseComponent() {
+		horseData = HorseFormat.generate();
+	}
+	
 	public String getCode() {
 		return CODE;
 	}

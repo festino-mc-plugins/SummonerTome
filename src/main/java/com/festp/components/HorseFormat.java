@@ -206,7 +206,6 @@ public class HorseFormat {
 	private static HorseFormat generateBySpawn(Class<? extends AbstractHorse> type)
 	{
 		Location tempLocation = null;
-		// TODO find any player and spawn above
 		World world = Bukkit.getWorlds().get(0);
 		if (world != null) {
 			if (world.getKeepSpawnInMemory()) {

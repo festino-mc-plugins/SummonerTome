@@ -1,7 +1,6 @@
 package com.festp.components;
 
 import org.bukkit.Material;
-import org.bukkit.Tag;
 import org.bukkit.entity.Boat;
 import org.bukkit.entity.ChestBoat;
 import org.bukkit.inventory.ItemStack;
@@ -61,46 +60,13 @@ public class BoatData
 	public void applyToBoat(Boat boat) {
 		CONVERTER.applyToBoat(this, boat);
 	}
+
+	public static BoatData fromBoatMaterial(Material m) {
+		return CONVERTER.fromBoatMaterial(m);
+	}
 	
 	public Class<? extends Boat> getBoatClass() {
 		return hasChest ? ChestBoat.class : Boat.class;
-	}
-
-	// TODO refactor
-	public static BoatData fromBoatMaterial(Material m) {
-		BoatData res = new BoatData();
-		res.hasChest = getIsChested(m);
-		m = getChestless(m);
-		if (charToMaterial(materialToChar(m)) != null)
-			res.boatMaterial = m;
-		return res;
-	}
-
-	private static boolean getIsChested(Material m) {
-		if (!UtilsVersion.SUPPORTS_CHEST_AND_MANGROVE)
-			return false;
-		return Tag.ITEMS_CHEST_BOATS.isTagged(m);
-	}
-	
-	private static Material getChestless(Material m) {
-		if (!UtilsVersion.SUPPORTS_CHEST_AND_MANGROVE)
-			return m;
-		
-		if (m == Material.ACACIA_CHEST_BOAT)
-			return Material.ACACIA_BOAT;
-		if (m == Material.BIRCH_CHEST_BOAT)
-			return Material.BIRCH_BOAT;
-		if (m == Material.DARK_OAK_CHEST_BOAT)
-			return Material.DARK_OAK_BOAT;
-		if (m == Material.JUNGLE_CHEST_BOAT)
-			return Material.JUNGLE_BOAT;
-		if (m == Material.OAK_CHEST_BOAT)
-			return Material.OAK_BOAT;
-		if (m == Material.SPRUCE_CHEST_BOAT)
-			return Material.SPRUCE_BOAT;
-		if (m == Material.MANGROVE_CHEST_BOAT)
-			return Material.MANGROVE_BOAT;
-		return m;
 	}
 
 	private static char materialToChar(Material material) {

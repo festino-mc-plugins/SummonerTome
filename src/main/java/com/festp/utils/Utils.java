@@ -96,6 +96,13 @@ public class Utils
 				return true;
 		return false;
 	}
+
+	public static boolean containsIgnoreCase(String[] args, String str) {
+		for (String s : args)
+			if (s.equalsIgnoreCase(str))
+				return true;
+		return false;
+	}
 	
 	public static boolean checkHotbar(Player player, Material m) {
 		PlayerInventory inv = player.getInventory();

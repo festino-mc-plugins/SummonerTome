@@ -4,6 +4,8 @@ import org.bukkit.Material;
 import org.bukkit.TreeSpecies;
 import org.bukkit.entity.Boat;
 
+import com.festp.utils.Utils;
+
 @SuppressWarnings("deprecation")
 public class BoatDataConverter1_18 implements IBoatDataConverter
 {
@@ -15,6 +17,19 @@ public class BoatDataConverter1_18 implements IBoatDataConverter
 
 	public void applyToBoat(BoatData data, Boat boat) {
 		boat.setWoodType(materialToWood(data.boatMaterial));
+	}
+
+	public BoatData fromBoatMaterial(Material m) {
+		BoatData res = new BoatData();
+		if (Utils.contains(getSupportedBoats(), m))
+			res.boatMaterial = m;
+		return res;
+	}
+
+	public Material[] getSupportedBoats() {
+		return new Material[] {
+				Material.ACACIA_BOAT, Material.BIRCH_BOAT, Material.DARK_OAK_BOAT,
+				Material.JUNGLE_BOAT, Material.OAK_BOAT, Material.SPRUCE_BOAT };
 	}
 	
 	private static TreeSpecies materialToWood(Material m) {
@@ -41,11 +56,5 @@ public class BoatDataConverter1_18 implements IBoatDataConverter
     	case REDWOOD: return Material.SPRUCE_BOAT;
 		}
 		return null;
-	}
-
-	public Material[] getSupportedBoats() {
-		return new Material[] {
-				Material.ACACIA_BOAT, Material.BIRCH_BOAT, Material.DARK_OAK_BOAT,
-				Material.JUNGLE_BOAT, Material.OAK_BOAT, Material.SPRUCE_BOAT };
 	}
 }
