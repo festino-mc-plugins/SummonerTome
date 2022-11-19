@@ -28,7 +28,7 @@ public class BoatDataConverter1_19 implements IBoatDataConverter
 		if (!desiredClass.isAssignableFrom(boat.getClass())
 				|| desiredClass == Boat.class && boat instanceof ChestBoat) { // dirty code
 			Location loc = boat.getLocation();
-			TomeEntityHandler.removeEntity(boat);
+			TomeEntityHandler.removeEntitySilently(boat);
 			boat = loc.getWorld().spawn(loc, desiredClass);
 			boat.teleport(loc);
 		}
