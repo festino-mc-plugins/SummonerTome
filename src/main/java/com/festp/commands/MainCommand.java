@@ -15,6 +15,9 @@ import org.bukkit.inventory.PlayerInventory;
 
 import com.festp.Permissions;
 import com.festp.components.ITomeComponent;
+import com.festp.config.Config;
+import com.festp.config.IConfig;
+import com.festp.config.LangConfig;
 import com.festp.crafting.TomeItemBuilder;
 import com.festp.tome.ComponentManager;
 import com.festp.tome.MissingComponent;
@@ -22,26 +25,28 @@ import com.festp.utils.Utils;
 
 public class MainCommand  implements CommandExecutor, TabCompleter
 {
-	private final static String SUBCOMMAND_GET = "get";
-	
 	public final static String COMMAND = "tome";
-	private final static String COMMAND_USAGE = ChatColor.GRAY+"Usage: /" + COMMAND + " " + SUBCOMMAND_GET + " "+ChatColor.GRAY+"type";
-	private final static String COMMAND_EXAMPLES = ChatColor.GRAY + "Example:\n"
-			+ "  /" + COMMAND + " " + SUBCOMMAND_GET + " boat";
+	private final static String SUBCOMMAND_GET = "get";
+	private final static String SUBCOMMAND_CONFIG = "config";
+	private final static String CONFIG_RELOAD = "reload";
 	
 	private final static String CODE_ALL = "all";
 	private final static String CODE_CUSTOM_ALL = "custom_all";
 	
-	private final static String NO_PERM = ChatColor.RED + "You must have " + ChatColor.WHITE + "%s" + ChatColor.RED + " permission to perform this command.";
-	private final static String NO_PLAYER = ChatColor.RED + "You must be a player to perform this command.";
-	private final static String NO_ITEM = ChatColor.RED + "Couldn't give the tome item, wrong type: %s";
-	private final static String NO_SPACE = ChatColor.RED + "There are no space in the inventory.";
-	
+	private final static String COMMAND_USAGE = ChatColor.GRAY+"Usage: /" + COMMAND + " " + SUBCOMMAND_GET + " "+ChatColor.GRAY+"type";
+	private final static String COMMAND_EXAMPLES = ChatColor.GRAY + "Example:"
+			+ "\n  /" + COMMAND + " " + SUBCOMMAND_GET + " boat"
+			+ "\n  /" + COMMAND + " " + SUBCOMMAND_CONFIG + " " + Config.Key.EFFECTS_PLAYSOUND.toString() + " true";
+
+	IConfig config;
+	LangConfig lang;
 	ComponentManager componentManager;
 	
 	List<String> aliases = new ArrayList<>();
 	
-	public MainCommand(ComponentManager componentManager) {
+	public MainCommand(IConfig config, LangConfig lang, ComponentManager componentManager) {
+		this.config = config;
+		this.lang = lang;
 		this.componentManager = componentManager;
 		// TODO localization
 		// name can't contain spaces
@@ -65,19 +70,19 @@ public class MainCommand  implements CommandExecutor, TabCompleter
 		if (subcommand.equalsIgnoreCase(SUBCOMMAND_GET))
 		{
 			if (!sender.hasPermission(Permissions.GET)) {
-				sender.sendMessage(String.format(NO_PERM, Permissions.GET));
+				sender.sendMessage(String.format(lang.command_noPerm, Permissions.GET));
 				return false;
 			}
 			
 			if (!(sender instanceof Player)) {
-				sender.sendMessage(NO_PLAYER);
+				sender.sendMessage(lang.get_noPlayer);
 				return false;
 			}
 			Player p = (Player)sender;
 			
 			ItemStack item = getItem(getComponentString(args));
 			if (item == null) {
-				sender.sendMessage(String.format(NO_ITEM, "not implemented"));
+				sender.sendMessage(String.format(lang.get_components_error, "not implemented"));
 				return true;
 			}
 			
@@ -94,12 +99,58 @@ public class MainCommand  implements CommandExecutor, TabCompleter
 						return true;
 					}
 				}
-				sender.sendMessage(NO_SPACE);
+				sender.sendMessage(lang.get_space_error);
 				return false;
 			}
 			return true;
 		}
-		/*if (name.equals("scan")) {
+		if (subcommand.equalsIgnoreCase(SUBCOMMAND_CONFIG))
+		{
+			if (!sender.hasPermission(Permissions.CONFIGURE)) {
+				sender.sendMessage(String.format(lang.command_noPerm, Permissions.CONFIGURE));
+				return false;
+			}
+			if (args.length == 1) {
+				sender.sendMessage(lang.command_noArgs);
+				return true;
+			}
+			
+			Config.Key key = null;
+			for (Config.Key k : Config.Key.values())
+				if (k.toString().equalsIgnoreCase(args[1])) {
+					key = k;
+					break;
+				}
+			if (key != null)
+			{
+				if (args.length == 2) {
+					sender.sendMessage(String.format(lang.config_getOk, key.toString(), config.get(key)));
+					return true;
+				}
+				Object val = key.validateValue(args[2]);
+				if (val == null) {
+					sender.sendMessage(String.format(lang.config_value_error, key));
+					return false;
+				}
+				
+				config.set(key, val);
+				sender.sendMessage(String.format(lang.config_setOk, key.toString(), val));
+				
+				return true;
+			}
+			else if (args[1].equalsIgnoreCase(CONFIG_RELOAD))
+			{
+				config.load();
+				lang.load();
+				sender.sendMessage(lang.config_reloadOk);
+				return true;
+			}
+			
+			sender.sendMessage(String.format(lang.config_key_error, args[1]));
+			
+			return true;
+		}
+		/*if (subcommand.equals("scan")) {
 			if (!(sender instanceof Player)) {
 				sender.sendMessage(NO_PLAYER);
 				return false;
@@ -129,17 +180,19 @@ public class MainCommand  implements CommandExecutor, TabCompleter
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String alias, String[] args)
 	{
 		List<String> options = new ArrayList<>();
-		if (!(sender instanceof Player) || !sender.hasPermission(Permissions.GET))
-			return options;
 
 		if (args.length == 1)
 		{
 			options.add(SUBCOMMAND_GET);
+			options.add(SUBCOMMAND_CONFIG);
 		}
 		
 		if (args.length >= 2)
 		{
 			if (args[0].equalsIgnoreCase(SUBCOMMAND_GET)) {
+				if (!(sender instanceof Player) || !sender.hasPermission(Permissions.GET)) {
+					return options;
+				}
 				String[] components = getComponents(getComponentString(args));
 				String arg = args[args.length - 1].toLowerCase();
 				for (String tomeAlias : aliases)
@@ -152,12 +205,6 @@ public class MainCommand  implements CommandExecutor, TabCompleter
 								componentList = componentManager.getAll();
 							else
 								componentList = componentManager.getCustomAll();
-							/*boolean containsList = true;
-							for (String component : componentList)
-								if (!Utils.containsIgnoreCase(components, component))
-									containsList = false;
-							if (containsList)
-								continue;*/
 							boolean intersectsList = false;
 							for (String component : componentList)
 								if (Utils.containsIgnoreCase(components, component))
@@ -168,6 +215,35 @@ public class MainCommand  implements CommandExecutor, TabCompleter
 						}
 						options.add(tomeAlias);
 					}
+			}
+			else if (args[0].equalsIgnoreCase(SUBCOMMAND_CONFIG)) {
+				if (!sender.hasPermission(Permissions.CONFIGURE)) {
+					return options;
+				}
+				
+				if (args.length == 2)
+				{
+					String arg = args[1].toLowerCase();
+					if (CONFIG_RELOAD.startsWith(arg))
+						options.add(CONFIG_RELOAD);
+					for (Config.Key k : Config.Key.values())
+						if (k.toString().startsWith(arg))
+							options.add(k.toString());
+				}
+				else if (args.length == 3)
+				{
+					String arg = args[1].toLowerCase();
+					for (Config.Key k : Config.Key.values())
+						if (k.toString().equalsIgnoreCase(arg)) {
+							if (k.getValueClass() == Boolean.class) {
+								options.add("true");
+								options.add("false");
+							} else {
+								options.add(k.getDefault() == null ? "null" : k.getDefault().toString());
+							}
+							break;
+						}
+				}
 			}
 		}
 		return options;

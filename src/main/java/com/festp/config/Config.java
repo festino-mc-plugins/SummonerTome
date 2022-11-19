@@ -107,6 +107,55 @@ public class Config implements IConfig
 	//TEST("components.minecart.use", true),
 	//TEST("components.horse.ban-slots-from", 1),
 	//TEST("components.boat.ban-slots-from", -1),
+	public class ComponentKey implements IConfig.Key {
+		private final String name;
+		private final Object defaultValue;
+
+		ComponentKey(String name, Object defaultValue) {
+			this.name = name;
+			this.defaultValue = defaultValue;
+		}
+		public Object getDefault() { return defaultValue; }
+		@Override
+		public String toString() { return name; }
+		
+		public Object validateValue(String valueStr) {
+			try {
+				if (defaultValue instanceof Boolean) {
+					return Boolean.parseBoolean(valueStr);
+				}
+				if (defaultValue instanceof Integer) {
+					return Integer.parseInt(valueStr);
+				}
+				if (defaultValue instanceof Double) {
+					return Double.parseDouble(valueStr);
+				}
+				if (defaultValue instanceof String) {
+					return valueStr;
+				}
+			} catch (Exception e) {}
+			return null;
+		}
+		
+		public Class<?> getValueClass() {
+			if (defaultValue instanceof Boolean) {
+				return Boolean.class;
+			}
+			if (defaultValue instanceof Integer) {
+				return Integer.class;
+			}
+			if (defaultValue instanceof Double) {
+				return Double.class;
+			}
+			if (defaultValue instanceof String) {
+				return String.class;
+			}
+			if (defaultValue instanceof List<?>) {
+				return defaultValue.getClass();
+			}
+			return null;
+		}
+	}
 	
 	public enum Key implements IConfig.Key {
 		EFFECTS_PLAYSOUND("effects-sounds", true),
@@ -129,7 +178,10 @@ public class Config implements IConfig
 		public Object validateValue(String valueStr) {
 			try {
 				if (defaultValue instanceof Boolean) {
-					return Boolean.parseBoolean(valueStr);
+					if (valueStr.equalsIgnoreCase("true"))
+						return true;
+					if (valueStr.equalsIgnoreCase("false"))
+						return false;
 				}
 				if (defaultValue instanceof Integer) {
 					return Integer.parseInt(valueStr);

@@ -65,7 +65,7 @@ public class Main extends JavaPlugin
     	craftManager.registerEvents(pm);
     	craftManager.addCrafts();
     	
-    	MainCommand command = new MainCommand(componentManager);
+    	MainCommand command = new MainCommand(config, lang, componentManager);
     	getCommand(MainCommand.COMMAND).setExecutor(command);
     	
     	FeedbackEffects feedback = new FeedbackEffects(config);
