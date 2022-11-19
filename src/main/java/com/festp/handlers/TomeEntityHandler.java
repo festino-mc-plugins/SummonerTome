@@ -89,7 +89,7 @@ public class TomeEntityHandler implements Listener
 	private void removeEntity(Entity entity)
 	{
 		feedbackEffects.playDespawn(entity.getLocation());
-		removeEntity(entity);
+		removeEntitySilently(entity);
 	}
 	
 	/** Clears entity inventory (ChestBoat#remove() drops items),
