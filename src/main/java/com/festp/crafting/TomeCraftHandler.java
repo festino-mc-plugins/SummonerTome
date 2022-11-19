@@ -27,6 +27,7 @@ import com.festp.components.ITomeComponent;
 import com.festp.components.MinecartComponent;
 import com.festp.components.PigComponent;
 import com.festp.components.StriderComponent;
+import com.festp.config.Config;
 import com.festp.tome.ComponentManager;
 import com.festp.tome.SummonerTome;
 import com.festp.utils.Utils;
@@ -41,10 +42,12 @@ public class TomeCraftHandler implements Listener
 	private Recipe boatRecipe;
 	private Recipe customHorseRecipe;
 	private Recipe combineRecipe;
+	private Config config;
 	
-	public TomeCraftHandler(Main plugin, CraftManager craftManager, ComponentManager componentManager)
+	public TomeCraftHandler(Main plugin, Config config, CraftManager craftManager, ComponentManager componentManager)
 	{
 		this.plugin = plugin;
+		this.config = config;
 		this.craftManager = craftManager;
 		this.componentManager = componentManager;
 	}
@@ -247,6 +250,7 @@ public class TomeCraftHandler implements Listener
 				}
 			}
 			
+			correct = correct && isAllowedComponentNumber(resComponents.size());
 			if (correct) {
 				SummonerTome combinedTome = new SummonerTome(resComponents.toArray(new ITomeComponent[0]));
 		    	ItemStack tomeItem = new ItemStack(Material.ENCHANTED_BOOK);
@@ -260,6 +264,13 @@ public class TomeCraftHandler implements Listener
 		}
 	}
 	
+	private boolean isAllowedComponentNumber(int number) {
+		int maxNumber = config.get(Config.Key.MAX_COMPONENTS, 0);
+		if (maxNumber == 0)
+			return true;
+		return number < maxNumber;
+	}
+
 	private boolean hasPermission(List<HumanEntity> viewers, String permission) {
 		if (viewers == null || permission == null)
 			return false;

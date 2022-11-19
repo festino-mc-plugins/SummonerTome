@@ -1,5 +1,7 @@
 package com.festp;
 
+import java.io.File;
+
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -11,6 +13,9 @@ import com.festp.components.HorseComponent;
 import com.festp.components.MinecartComponent;
 import com.festp.components.PigComponent;
 import com.festp.components.StriderComponent;
+import com.festp.config.Config;
+import com.festp.config.FeedbackEffects;
+import com.festp.config.LangConfig;
 import com.festp.crafting.CraftManager;
 import com.festp.crafting.TomeItemBuilder;
 import com.festp.handlers.TomeClickHandler;
@@ -47,22 +52,28 @@ public class Main extends JavaPlugin
     		componentManager.register(new SimpleComponentFactory(StriderComponent.class));
     	componentManager.stopRegisterAsNative();
 
+		LangConfig lang = new LangConfig(new File(getDataFolder(), "lang.yml"));
+    	Config config = new Config(this, lang);
+    	config.load();
+    	config.save();
+
     	// TODO rework bad design
     	TomeSerializer.setComponentManager(componentManager);
     	TomeItemBuilder.setComponentManager(componentManager);
     	
-    	craftManager = new CraftManager(this, getServer(), componentManager);
+    	craftManager = new CraftManager(this, getServer(), config, componentManager);
     	craftManager.registerEvents(pm);
     	craftManager.addCrafts();
     	
     	MainCommand command = new MainCommand(componentManager);
     	getCommand(MainCommand.COMMAND).setExecutor(command);
     	
-    	TomeClickHandler clickHandler = new TomeClickHandler();
+    	FeedbackEffects feedback = new FeedbackEffects(config);
+    	TomeClickHandler clickHandler = new TomeClickHandler(feedback);
     	pm.registerEvents(clickHandler, this);
     	TomeInventoryHandler inventoryHandler = new TomeInventoryHandler();
     	pm.registerEvents(inventoryHandler, this);
-    	TomeEntityHandler entityHandler = new TomeEntityHandler();
+    	TomeEntityHandler entityHandler = new TomeEntityHandler(feedback);
     	pm.registerEvents(entityHandler, this);
     	
 		Bukkit.getScheduler().scheduleSyncRepeatingTask(this,

@@ -35,6 +35,12 @@ public class TomeClickHandler implements Listener
 		}
 	}
 	
+	private final FeedbackEffects feedbackEffects;
+	
+	public TomeClickHandler(FeedbackEffects feedbackEffects) {
+		this.feedbackEffects = feedbackEffects;
+	}
+	
 	// Customization (swap an entity with the tome entity)
 	@EventHandler
 	public void onPlayerInteractEntity(PlayerInteractEntityEvent event) //PlayerInteractAtEntityEvent
@@ -43,9 +49,9 @@ public class TomeClickHandler implements Listener
 		if (!res.hasTome)
 			return;
 		if (res.failed)
-			FeedbackEffects.playSwapFail(event.getPlayer());
+			feedbackEffects.playSwapFail(event.getPlayer());
 		else
-			FeedbackEffects.playSwapSuccess(res.entity.getLocation());
+			feedbackEffects.playSwapSuccess(res.entity.getLocation());
 	}
 	
 	private InteractResult getSwapResult(PlayerInteractEntityEvent event)
@@ -104,9 +110,9 @@ public class TomeClickHandler implements Listener
 		if (!res.hasTome)
 			return;
 		if (res.failed)
-			FeedbackEffects.playSummonFail(event.getPlayer());
+			feedbackEffects.playSummonFail(event.getPlayer());
 		else
-			FeedbackEffects.playSummonSuccess(res.entity.getLocation());
+			feedbackEffects.playSummonSuccess(res.entity.getLocation());
 	}
 	private InteractResult getSummonResult(PlayerInteractEvent event)
 	{	

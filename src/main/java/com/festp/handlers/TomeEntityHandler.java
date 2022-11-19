@@ -23,6 +23,12 @@ import com.festp.utils.UtilsWorld;
 
 public class TomeEntityHandler implements Listener
 {
+	private final FeedbackEffects feedbackEffects;
+	
+	public TomeEntityHandler(FeedbackEffects feedbackEffects) {
+		this.feedbackEffects = feedbackEffects;
+	}
+	
 	@EventHandler
 	public void onPlayerDropTome(PlayerDropItemEvent event) {
 		Entity summoned = SummonUtils.getHasSummoned(event.getItemDrop().getItemStack());
@@ -82,7 +88,7 @@ public class TomeEntityHandler implements Listener
 	
 	private void removeEntity(Entity entity)
 	{
-		FeedbackEffects.playDespawn(entity.getLocation());
+		feedbackEffects.playDespawn(entity.getLocation());
 		removeEntity(entity);
 	}
 	

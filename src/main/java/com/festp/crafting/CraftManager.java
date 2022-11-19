@@ -13,6 +13,7 @@ import org.bukkit.inventory.Recipe;
 import org.bukkit.plugin.PluginManager;
 
 import com.festp.Main;
+import com.festp.config.Config;
 import com.festp.tome.ComponentManager;
 
 public class CraftManager implements Listener {
@@ -24,10 +25,10 @@ public class CraftManager implements Listener {
 	
 	List<NamespacedKey> recipeKeys = new ArrayList<>();
 	
-	public CraftManager(Main plugin, Server server, ComponentManager componentManager) {
+	public CraftManager(Main plugin, Server server, Config config, ComponentManager componentManager) {
 		this.plugin = plugin;
 		this.server = server;
-    	this.craftHandler = new TomeCraftHandler(plugin, this, componentManager);
+    	this.craftHandler = new TomeCraftHandler(plugin, config, this, componentManager);
 	}
 
 	public void registerEvents(PluginManager pm) {
