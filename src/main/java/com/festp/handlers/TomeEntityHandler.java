@@ -21,8 +21,8 @@ import com.festp.config.FeedbackEffects;
 import com.festp.utils.SummonUtils;
 import com.festp.utils.UtilsWorld;
 
-public class TomeEntityHandler implements Listener {
-	
+public class TomeEntityHandler implements Listener
+{
 	@EventHandler
 	public void onPlayerDropTome(PlayerDropItemEvent event) {
 		Entity summoned = SummonUtils.getHasSummoned(event.getItemDrop().getItemStack());
@@ -43,7 +43,7 @@ public class TomeEntityHandler implements Listener {
 	public void onChunkLoad(ChunkLoadEvent event) {
 		for (Entity e : event.getChunk().getEntities())
 			if (SummonUtils.wasSummoned(e) && e.getPassengers().size() == 0)
-				removeEntity(e);
+				removeEntitySilently(e);
 	}
 
 	@EventHandler
@@ -80,7 +80,15 @@ public class TomeEntityHandler implements Listener {
 		}));
 	}
 	
-	public static void removeEntity(Entity entity)
+	private void removeEntity(Entity entity)
+	{
+		FeedbackEffects.playDespawn(entity.getLocation());
+		removeEntity(entity);
+	}
+	
+	/** Clears entity inventory (ChestBoat#remove() drops items),
+	 * ejects passengers (Entity#remove() doesn't even with #removePassenger() or #eject()) */
+	public static void removeEntitySilently(Entity entity)
 	{
 		// ChestBoat workaround, horses are fine without it
 		// may collapse with TomeInventoryHandler saving while lagging
@@ -89,7 +97,6 @@ public class TomeEntityHandler implements Listener {
 			((InventoryHolder)entity).getInventory().clear();
 		// entity.eject(); and passenger.leaveVehicle(); are not working; critical for striders
 		eject(entity);
-		FeedbackEffects.playDespawn(entity.getLocation());
 		entity.remove();
 	}
 	
