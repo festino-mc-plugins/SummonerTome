@@ -115,37 +115,51 @@ public class UtilsWorld
 	
 	public static Location findEjectBlock2x2(Location playerLoc)
 	{
+		double xOffset = getBlockCenterOffset(playerLoc.getX());
+		double zOffset = getBlockCenterOffset(playerLoc.getZ());
 		int dx = 1, dz = 1;
-		if (getBlockCenterOffset(playerLoc.getX()) < 0)
+		if (xOffset < 0)
 			dx = -1;
-		if (getBlockCenterOffset(playerLoc.getZ()) < 0)
+		if (zOffset < 0)
 			dz = -1;
+		boolean xFirst = Math.abs(xOffset) > Math.abs(zOffset);
 
 		Block startBlock = playerLoc.getBlock();
-		Block blockStayIn = findEjectBlock2x2(startBlock, dx, dz);
+		Block blockStayIn = findEjectBlock2x2(startBlock, dx, dz, xFirst);
 		if (blockStayIn == null) {
 			startBlock = startBlock.getRelative(BlockFace.DOWN);
-			blockStayIn = findEjectBlock2x2(startBlock, dx, dz);
+			blockStayIn = findEjectBlock2x2(startBlock, dx, dz, xFirst);
 			if (blockStayIn == null) {
 				startBlock = startBlock.getRelative(BlockFace.UP).getRelative(BlockFace.UP);
-				blockStayIn = findEjectBlock2x2(startBlock, dx, dz);
+				blockStayIn = findEjectBlock2x2(startBlock, dx, dz, xFirst);
 			}
 		}
 		if (blockStayIn == null)
 			return null;
 		return blockStayIn.getLocation().add(0.5, 0, 0.5);
 	}
-	private static Block findEjectBlock2x2(Block start, int dx, int dz)
+	private static Block findEjectBlock2x2(Block start, int dx, int dz, boolean xFirst)
 	{
 		if (UtilsType.playerCanStayIn(start))
 			return start;
-		start = start.getRelative(dx, 0, 0);
-		if (UtilsType.playerCanStayIn(start))
-			return start;
-		start = start.getRelative(-dx, 0, dz);
-		if (UtilsType.playerCanStayIn(start))
-			return start;
-		start = start.getRelative(dx, 0, 0);
+		if (xFirst) {
+			start = start.getRelative(dx, 0, 0);
+			if (UtilsType.playerCanStayIn(start))
+				return start;
+			start = start.getRelative(-dx, 0, dz);
+			if (UtilsType.playerCanStayIn(start))
+				return start;
+			start = start.getRelative(dx, 0, 0);
+		}
+		else {
+			start = start.getRelative(0, 0, dz);
+			if (UtilsType.playerCanStayIn(start))
+				return start;
+			start = start.getRelative(dx, 0, -dz);
+			if (UtilsType.playerCanStayIn(start))
+				return start;
+			start = start.getRelative(0, 0, dz);
+		}
 		if (UtilsType.playerCanStayIn(start))
 			return start;
 		return null;
