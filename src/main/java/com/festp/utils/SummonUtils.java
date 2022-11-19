@@ -76,7 +76,12 @@ public class SummonUtils
 	}
 	
 	public static Location tryFindForStrider(Location playerLoc, double horRadius) {
-		return UtilsWorld.searchBlock(playerLoc.add(0, -1, 0), PREDICATE_STRIDER, horRadius);
+		Location loc = UtilsWorld.searchBlock(playerLoc.add(0, -1, 0), PREDICATE_STRIDER, horRadius);
+		if (loc == null)
+			loc = UtilsWorld.searchBlock(playerLoc.add(0, -1, 0), PREDICATE_STRIDER, horRadius);
+		if (loc != null)
+			loc.add(0, 1, 0);
+		return loc;
 	}
 	public static Strider summonStrider(Location l, Player p) {
 		l.setDirection(p.getLocation().getDirection());
