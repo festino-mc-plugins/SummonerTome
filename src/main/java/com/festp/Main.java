@@ -41,7 +41,12 @@ public class Main extends JavaPlugin
     	
     	NBTUtils.setPlugin(this);
 
-    	ComponentManager componentManager = new ComponentManager();
+		LangConfig lang = new LangConfig(new File(getDataFolder(), "lang.yml"));
+    	Config config = new Config(this, lang);
+    	config.load();
+    	config.save();
+
+    	ComponentManager componentManager = new ComponentManager(config);
     	// TODO localization? - use only updateInfo()
     	componentManager.register(new SimpleComponentFactory(MinecartComponent.class));
     	componentManager.register(new SimpleComponentFactory(BoatComponent.class));
@@ -51,11 +56,6 @@ public class Main extends JavaPlugin
     	if (UtilsVersion.SUPPORTS_STRIDER)
     		componentManager.register(new SimpleComponentFactory(StriderComponent.class));
     	componentManager.stopRegisterAsNative();
-
-		LangConfig lang = new LangConfig(new File(getDataFolder(), "lang.yml"));
-    	Config config = new Config(this, lang);
-    	config.load();
-    	config.save();
 
     	// TODO rework bad design
     	TomeSerializer.setComponentManager(componentManager);

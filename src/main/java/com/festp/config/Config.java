@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -17,10 +18,14 @@ public class Config implements IConfig
 	private LangConfig lang;
 	private MemoryConfiguration config;
 	private final HashMap<String, Object> map = new HashMap<>();
+	private final HashMap<String, IConfig.Key> keyMap = new HashMap<>();
 	
 	public Config(JavaPlugin jp, LangConfig lang) {
 		this.plugin = jp;
 		this.lang = lang;
+		for (Key key : Key.values()) {
+			setNoSave(key, key.defaultValue);
+		}
 	}
 	
 	public void load() {
@@ -29,7 +34,7 @@ public class Config implements IConfig
 			FileUtils.copyFileFromResource(configFile, "config.yml");
 		plugin.reloadConfig();
 		config = plugin.getConfig();
-		map.putAll(config.getValues(true));
+		map.putAll(config.getValues(true)); // ignore keyMap
 		saveSilently();
 		Logger.info(lang.config_reload);
 	}
@@ -39,17 +44,42 @@ public class Config implements IConfig
 		Logger.info(lang.config_save);
 	}
 	public void saveSilently() {
-		for (Key key : Key.values()) {
+		/*for (Key key : Key.values()) {
 			config.set(key.name, get(key));
+		}*/
+		for (String name : getKeys()) {
+			if (getKey(name) != null)
+				config.set(name, get(name));
 		}
 		plugin.saveConfig();
 	}
-	
-	
+
+
+
+	public Set<String> getKeys() {
+		return keyMap.keySet();
+	}
+	public IConfig.Key getKey(String name) {
+		return keyMap.get(name);
+	}
 	
 	public void set(IConfig.Key key, Object value) {
+		setNoSave(key, value);
+		saveSilently();
+	}
+	private void setNoSave(IConfig.Key key, Object value) {
 		map.put(key.toString(), value);
-		save();
+		keyMap.put(key.toString(), key);
+	}
+	
+	public Object get(String keyName, Object defaultValue) {
+		IConfig.Key key = getKey(keyName);
+		applyDefault(key, defaultValue);
+		
+		return map.getOrDefault(key.toString(), defaultValue);
+	}
+	public Object get(String key) {
+		return get(key, null);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -85,84 +115,23 @@ public class Config implements IConfig
 	
 	
 	
-	private void applyDefault(String key, Object defaultValue) {
-		if (!map.containsKey(key)) {
-			map.put(key, defaultValue);
-		}
-	}
 	private void applyDefault(IConfig.Key key, Object defaultValue) {
 		if (defaultValue == null)
-			applyDefault(key);
-		else
-			applyDefault(key.toString(), defaultValue);
-	}
-	private void applyDefault(IConfig.Key key) {
-		applyDefault(key.toString(), key.getDefault());
+			defaultValue = key.getDefault();
+		if (!map.containsKey(key.toString())) {
+			set(key, defaultValue);
+		}
 	}
 	
 	
-	
-	// TODO create set for every component, options: enable craft, enable functionality, banned slots
-	//TEST("components.minecart.craft", true),
-	//TEST("components.minecart.use", true),
-	//TEST("components.horse.ban-slots-from", 1),
-	//TEST("components.boat.ban-slots-from", -1),
-	public class ComponentKey implements IConfig.Key {
-		private final String name;
-		private final Object defaultValue;
-
-		ComponentKey(String name, Object defaultValue) {
-			this.name = name;
-			this.defaultValue = defaultValue;
-		}
-		public Object getDefault() { return defaultValue; }
-		@Override
-		public String toString() { return name; }
-		
-		public Object validateValue(String valueStr) {
-			try {
-				if (defaultValue instanceof Boolean) {
-					return Boolean.parseBoolean(valueStr);
-				}
-				if (defaultValue instanceof Integer) {
-					return Integer.parseInt(valueStr);
-				}
-				if (defaultValue instanceof Double) {
-					return Double.parseDouble(valueStr);
-				}
-				if (defaultValue instanceof String) {
-					return valueStr;
-				}
-			} catch (Exception e) {}
-			return null;
-		}
-		
-		public Class<?> getValueClass() {
-			if (defaultValue instanceof Boolean) {
-				return Boolean.class;
-			}
-			if (defaultValue instanceof Integer) {
-				return Integer.class;
-			}
-			if (defaultValue instanceof Double) {
-				return Double.class;
-			}
-			if (defaultValue instanceof String) {
-				return String.class;
-			}
-			if (defaultValue instanceof List<?>) {
-				return defaultValue.getClass();
-			}
-			return null;
-		}
-	}
 	
 	public enum Key implements IConfig.Key {
 		EFFECTS_PLAYSOUND("effects-sounds", true),
 		EFFECTS_SPAWNPARTICLE("effects-particles", true),
 		MAX_COMPONENTS("max-components", 0),
 		///LOG_DEBUG("log-debug-info", false),
-		COMPONENT_NAMES("component-names", new String[0]);
+		SOFT_DEPENDENCY("soft-dependency", false),
+		SOFT_DISABLING("soft-disabling", true);
 		
 		private final String name;
 		private final Object defaultValue;

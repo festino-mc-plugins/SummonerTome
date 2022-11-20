@@ -18,6 +18,7 @@ public class TomeItemBuilder
 	private static final int REPAIR_COST = 1000;
 	private static final String TOME_NBT_KEY = "summonertome";
 
+	// TODO localization
 	public static final String NAME_ALL_TEMPLATE = "United tome";
 	public static final String NAME_MIXED_TEMPLATE = "Combined tome";
 	public static final String NAME_ONE_TYPE_TEMPLATE = "%s tome";

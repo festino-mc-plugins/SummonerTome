@@ -1,7 +1,10 @@
 package com.festp.commands;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -115,8 +118,8 @@ public class MainCommand  implements CommandExecutor, TabCompleter
 				return true;
 			}
 			
-			Config.Key key = null;
-			for (Config.Key k : Config.Key.values())
+			IConfig.Key key = null;
+			for (IConfig.Key k : getAllowedKeys())
 				if (k.toString().equalsIgnoreCase(args[1])) {
 					key = k;
 					break;
@@ -175,8 +178,46 @@ public class MainCommand  implements CommandExecutor, TabCompleter
 		sender.sendMessage(COMMAND_EXAMPLES);
 		return false;
 	}
+
+	// all/custom_all or <list>, e.g. "minecart boat"
+	private ItemStack getItem(String str)
+	{
+		str = str.toLowerCase();
+		String[] componentNames;
+		if (str.equalsIgnoreCase(CODE_ALL)) {
+			componentNames = componentManager.getAll();
+		} else if (str.equalsIgnoreCase(CODE_CUSTOM_ALL)) {
+			componentNames = componentManager.getCustomAll();
+		} else {
+			componentNames = getComponents(str);
+		}
+		ITomeComponent[] components = new ITomeComponent[componentNames.length];
+		for (int i = 0; i < componentNames.length; i++) {
+			components[i] = componentManager.fromCode(componentNames[i]);
+			if (components[i] instanceof MissingComponent)
+				return null;
+		}
+		
+		return TomeItemBuilder.getNewTome(components);
+	}
+
 	
-	@Override
+	private static String getComponentString(String[] args) {
+		String res = "";
+		if (args.length >= 2) {
+			res = args[1];
+			for (int i = 2; i < args.length; i++)
+				res += " " + args[i];
+		}
+		return res;
+	}
+	
+	private static String[] getComponents(String str) {
+		return str.split(" ");
+	}
+	
+	
+	
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String alias, String[] args)
 	{
 		List<String> options = new ArrayList<>();
@@ -226,14 +267,20 @@ public class MainCommand  implements CommandExecutor, TabCompleter
 					String arg = args[1].toLowerCase();
 					if (CONFIG_RELOAD.startsWith(arg))
 						options.add(CONFIG_RELOAD);
-					for (Config.Key k : Config.Key.values())
-						if (k.toString().startsWith(arg))
-							options.add(k.toString());
+					for (IConfig.Key k : getAllowedKeys()) {
+						String name = k.toString();
+						if (name.startsWith(arg)) {
+							int endIndex = name.indexOf(".", arg.length()) + 1;
+							if (endIndex == 0)
+								endIndex = name.length();
+							options.add(name.substring(0, endIndex));
+						}
+					}
 				}
 				else if (args.length == 3)
 				{
 					String arg = args[1].toLowerCase();
-					for (Config.Key k : Config.Key.values())
+					for (IConfig.Key k : getAllowedKeys())
 						if (k.toString().equalsIgnoreCase(arg)) {
 							if (k.getValueClass() == Boolean.class) {
 								options.add("true");
@@ -248,41 +295,23 @@ public class MainCommand  implements CommandExecutor, TabCompleter
 		}
 		return options;
 	}
-
-	// all/custom_all or <list>, e.g. "minecart boat"
-	private ItemStack getItem(String str)
-	{
-		str = str.toLowerCase();
-		String[] componentNames;
-		if (str.equalsIgnoreCase(CODE_ALL)) {
-			componentNames = componentManager.getAll();
-		} else if (str.equalsIgnoreCase(CODE_CUSTOM_ALL)) {
-			componentNames = componentManager.getCustomAll();
-		} else {
-			componentNames = getComponents(str);
-		}
-		ITomeComponent[] components = new ITomeComponent[componentNames.length];
-		for (int i = 0; i < componentNames.length; i++) {
-			components[i] = componentManager.fromCode(componentNames[i]);
-			if (components[i] instanceof MissingComponent)
-				return null;
-		}
-		
-		return TomeItemBuilder.getNewTome(components);
-	}
-
 	
-	private static String getComponentString(String[] args) {
-		String res = "";
-		if (args.length >= 2) {
-			res = args[1];
-			for (int i = 2; i < args.length; i++)
-				res += " " + args[i];
+	private List<IConfig.Key> getAllowedKeys()
+	{
+		List<IConfig.Key> res = new ArrayList<>();
+		Set<String> leafPrefixes = new HashSet<>();
+		for (String name : config.getKeys()) {
+			res.add(config.getKey(name));
+			if (name.contains(".")) {
+				leafPrefixes.add(name.substring(0, name.lastIndexOf(".")));
+			}
+		}
+		// remove all non-leaf nodes
+		for (int i = res.size() - 1; i >= 0; i--) {
+			IConfig.Key k = res.get(i);
+			if (leafPrefixes.contains(k.toString()))
+				res.remove(i);
 		}
 		return res;
-	}
-	
-	private static String[] getComponents(String str) {
-		return str.split(" ");
 	}
 }

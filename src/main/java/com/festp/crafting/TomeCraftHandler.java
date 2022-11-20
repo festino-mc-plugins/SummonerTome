@@ -11,6 +11,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
+import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.RecipeChoice;
@@ -149,14 +150,24 @@ public class TomeCraftHandler implements Listener
 		SummonerTome newType = SummonerTome.getTome(event.getInventory().getResult());
 		if (newType == null) return;
 
-		ItemStack[] matrix = event.getInventory().getMatrix();
+		ItemStack res = getExactCraftResult(event.getRecipe(), event.getInventory());
+
+		if (newType.getComponents().length == 1) {
+			ITomeComponent component = newType.getComponents()[0];
+			if (!componentManager.isCraftable(component.getCode()))
+				res = null;
+		}
+		event.getInventory().setResult(res);
+	}
+	private ItemStack getExactCraftResult(Recipe recipe, CraftingInventory inventory)
+	{
+		ItemStack[] matrix = inventory.getMatrix();
 		// upgrade horse to custom horse:   any horse tome + NAME from nametag
 		// set the actual result of the custom horse tome recipe
-		if (isEqual(event.getRecipe(), customHorseRecipe))
+		if (isEqual(recipe, customHorseRecipe))
 		{
-			if (!hasPermission(event.getViewers(), Permissions.CRAFT)) {
-				event.getInventory().setResult(null);
-				return;
+			if (!hasPermission(inventory.getViewers(), Permissions.CRAFT)) {
+				return null;
 			}
 			
 			String customName = null;
@@ -204,20 +215,18 @@ public class TomeCraftHandler implements Listener
 					meta.setDisplayName(customName);
 					newItem.setItemMeta(meta);
 				}
-		    	event.getInventory().setResult(newItem);
+				return newItem;
 			}
 			else {
-				event.getInventory().setResult(null);
+				return null;
 			}
-	    	return;
 		}
 		
 		// set the actual result of the combined tome recipe
-		if (isEqual(event.getRecipe(), combineRecipe))
+		if (isEqual(recipe, combineRecipe))
 		{
-			if (!hasPermission(event.getViewers(), Permissions.CRAFT)) {
-				event.getInventory().setResult(null);
-				return;
+			if (!hasPermission(inventory.getViewers(), Permissions.CRAFT)) {
+				return null;
 			}
 			
 			boolean correct = true;
@@ -255,20 +264,20 @@ public class TomeCraftHandler implements Listener
 				SummonerTome combinedTome = new SummonerTome(resComponents.toArray(new ITomeComponent[0]));
 		    	ItemStack tomeItem = new ItemStack(Material.ENCHANTED_BOOK);
 		    	tomeItem = TomeItemBuilder.applyTome(tomeItem, combinedTome);
-		    	event.getInventory().setResult(tomeItem);
+		    	return tomeItem;
 			}
 			else {
-				event.getInventory().setResult(null);
+		    	return null;
 			}
-	    	return;
 		}
+    	return inventory.getResult();
 	}
 	
 	private boolean isAllowedComponentNumber(int number) {
 		int maxNumber = config.get(Config.Key.MAX_COMPONENTS, 0);
 		if (maxNumber == 0)
 			return true;
-		return number < maxNumber;
+		return number <= maxNumber;
 	}
 
 	private boolean hasPermission(List<HumanEntity> viewers, String permission) {
