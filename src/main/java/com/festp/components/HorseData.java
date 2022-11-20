@@ -14,6 +14,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.AbstractHorseInventory;
 import org.bukkit.inventory.ItemStack;
 
+import com.festp.handlers.TomeEntityHandler;
 import com.festp.inventory.InventorySerializer;
 import com.festp.utils.SummonUtils;
 import com.festp.utils.Utils;
@@ -23,7 +24,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 
-public class HorseFormat {
+public class HorseData {
 	double maxHealth;
 	double speed;
 	double jumpStrength;
@@ -38,7 +39,7 @@ public class HorseFormat {
 	// CHESTED
 	boolean chestedIsCarrying;
 	
-	private HorseFormat() {}
+	private HorseData() {}
 	
 	@Override
 	public String toString()
@@ -60,7 +61,7 @@ public class HorseFormat {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static HorseFormat fromString(String s)
+	public static HorseData fromString(String s)
 	{
 		if (s == null || s.equals("")) {
 			return null;
@@ -76,7 +77,7 @@ public class HorseFormat {
 			return null;
 		}
 		
-		HorseFormat res = new HorseFormat();
+		HorseData res = new HorseData();
 		Class<?> resClass = Utils.getBukkitClass(json.get("type").getAsString());
 		if (resClass == null) {
 			System.out.print("[] SummonerTome horse class parse error: " + s);
@@ -145,7 +146,7 @@ public class HorseFormat {
 		};
 		if (!type.isAssignableFrom(horse.getClass())) {
 			Location loc = horse.getLocation();
-			horse.remove();
+			TomeEntityHandler.removeEntitySilently(horse);
 			horse = SummonUtils.summonCustomHorse(loc, type, setter);
 			horse.teleport(loc);
 		} else {
@@ -153,9 +154,9 @@ public class HorseFormat {
 		}
 	}
 
-	public static HorseFormat fromHorse(AbstractHorse horse)
+	public static HorseData fromHorse(AbstractHorse horse)
 	{
-		HorseFormat res = new HorseFormat();
+		HorseData res = new HorseData();
 		res.type = horse.getClass();
 		res.maxHealth = horse.getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue();
 		res.speed = horse.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).getBaseValue();
@@ -175,15 +176,15 @@ public class HorseFormat {
 		return res;
 	}
 
-	public static HorseFormat generate() {
+	public static HorseData generate() {
 		return generate(Horse.class);
 	}
-	public static HorseFormat generate(Class<? extends AbstractHorse> type)
+	public static HorseData generate(Class<? extends AbstractHorse> type)
 	{
-		HorseFormat res = generateBySpawn(type);
+		HorseData res = generateBySpawn(type);
 		if (res == null)
 		{
-			res = new HorseFormat();
+			res = new HorseData();
 			res.type = type;
 			res.maxHealth = UtilsRandom.getInt(15, 30);
 			res.speed = UtilsRandom.getDouble(0.1125, 0.3375);
@@ -203,7 +204,7 @@ public class HorseFormat {
 		res.inventory[0] = new ItemStack(Material.SADDLE);
 		return res;
 	}
-	private static HorseFormat generateBySpawn(Class<? extends AbstractHorse> type)
+	private static HorseData generateBySpawn(Class<? extends AbstractHorse> type)
 	{
 		Location tempLocation = null;
 		World world = Bukkit.getWorlds().get(0);
@@ -226,7 +227,7 @@ public class HorseFormat {
 		AbstractHorse horse = world.spawn(tempLocation, type);
 		if (horse == null)
 			return null;
-		HorseFormat res = HorseFormat.fromHorse(horse);
+		HorseData res = HorseData.fromHorse(horse);
 		horse.remove();
 		return res;
 	}

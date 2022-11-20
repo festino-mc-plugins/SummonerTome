@@ -13,10 +13,10 @@ public class CustomHorseComponent implements ITomeComponent
 	private static final String SERIALIZATION_NO_HORSE_DATA = "null";
 	public static final String CODE = "custom_horse";
 	
-	private HorseFormat horseData;
+	private HorseData horseData;
 	
 	public CustomHorseComponent() {
-		horseData = HorseFormat.generate();
+		horseData = HorseData.generate();
 	}
 	
 	public String getCode() {
@@ -37,7 +37,7 @@ public class CustomHorseComponent implements ITomeComponent
 		if (data == SERIALIZATION_NO_HORSE_DATA)
 			horseData = null;
 		else
-			horseData = HorseFormat.fromString(data);
+			horseData = HorseData.fromString(data);
 	}
 
 	public boolean trySwap(Entity entity)
@@ -49,8 +49,8 @@ public class CustomHorseComponent implements ITomeComponent
 		if (horse.getInventory().getSaddle() == null)
 			return false;
 		
-		HorseFormat oldData = horseData;
-		horseData = HorseFormat.fromHorse(horse);
+		HorseData oldData = horseData;
+		horseData = HorseData.fromHorse(horse);
 		if (oldData == null)
 			horse.remove();
 		else
@@ -70,10 +70,10 @@ public class CustomHorseComponent implements ITomeComponent
 		return SummonUtils.summonCustomHorse(loc, summoner, horseData);
 	}
 
-	public HorseFormat getHorseData() {
+	public HorseData getHorseData() {
 		return horseData;
 	}
-	public void setHorseData(HorseFormat horseData) {
+	public void setHorseData(HorseData horseData) {
 		this.horseData = horseData;
 	}
 }

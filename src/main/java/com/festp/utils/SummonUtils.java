@@ -18,7 +18,7 @@ import org.bukkit.entity.Strider;
 import org.bukkit.inventory.ItemStack;
 
 import com.festp.components.BoatData;
-import com.festp.components.HorseFormat;
+import com.festp.components.HorseData;
 
 public class SummonUtils
 {
@@ -149,7 +149,7 @@ public class SummonUtils
 		return horse;
 	}
 	
-	public static AbstractHorse summonCustomHorse(Location l, Player p, HorseFormat horseData)
+	public static AbstractHorse summonCustomHorse(Location l, Player p, HorseData horseData)
 	{
 		Class<? extends AbstractHorse> type;
 		if (horseData == null) {

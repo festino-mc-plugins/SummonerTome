@@ -24,7 +24,7 @@ import org.bukkit.inventory.PlayerInventory;
 import com.festp.components.BoatComponent;
 import com.festp.components.BoatData;
 import com.festp.components.CustomHorseComponent;
-import com.festp.components.HorseFormat;
+import com.festp.components.HorseData;
 import com.festp.tome.SummonerTome;
 import com.festp.utils.SummonUtils;
 import com.festp.utils.UtilsType;
@@ -224,7 +224,7 @@ public class TomeInventoryHandler implements Listener
 			else {
 				ItemStack modifiedTome = null;
 				if (entity instanceof AbstractHorse)
-					modifiedTome = setHorseData(playerInv[slot], HorseFormat.fromHorse((AbstractHorse)entity));
+					modifiedTome = setHorseData(playerInv[slot], HorseData.fromHorse((AbstractHorse)entity));
 				else if (entity instanceof Boat)
 					modifiedTome = setBoatData(playerInv[slot], BoatData.fromBoat((Boat)entity));
 				playerInv[slot] = modifiedTome;
@@ -238,7 +238,7 @@ public class TomeInventoryHandler implements Listener
 	// TODO refactor boat and horse inventory saving
 	// options: IInventorySetter#setData(ItemStack, Entity), register Entity on summon
 	// ban all summoned inventories by default
-	public static ItemStack setHorseData(ItemStack item, HorseFormat horseData)
+	public static ItemStack setHorseData(ItemStack item, HorseData horseData)
 	{
 		SummonerTome tome = SummonerTome.getTome(item);
 	    CustomHorseComponent comp = new CustomHorseComponent();
