@@ -146,9 +146,9 @@ public class HorseData {
 		};
 		if (!type.isAssignableFrom(horse.getClass())) {
 			Location loc = horse.getLocation();
-			TomeEntityHandler.removeEntitySilently(horse);
-			horse = SummonUtils.summonCustomHorse(loc, type, setter);
-			horse.teleport(loc);
+			AbstractHorse newHorse = SummonUtils.summonCustomHorse(loc, type, setter);
+			TomeEntityHandler.replaceEntity(horse, newHorse);
+			horse = newHorse;
 		} else {
 			setter.set(horse);
 		}

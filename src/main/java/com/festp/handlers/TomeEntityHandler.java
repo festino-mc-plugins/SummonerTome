@@ -106,6 +106,13 @@ public class TomeEntityHandler implements Listener
 		entity.remove();
 	}
 	
+	public static void replaceEntity(Entity oldEntity, Entity newEntity)
+	{
+		Location loc = oldEntity.getLocation();
+		TomeEntityHandler.removeEntitySilently(oldEntity);
+		newEntity.teleport(loc);
+	}
+	
 	private static void eject(Entity entity)
 	{
 		for (Entity passenger : entity.getPassengers())
