@@ -9,6 +9,7 @@ import org.bukkit.inventory.ItemStack;
 
 import com.festp.components.ITomeComponent;
 import com.festp.crafting.TomeItemBuilder;
+import com.festp.utils.SummonUtils;
 
 public class SummonerTome
 {
@@ -72,7 +73,10 @@ public class SummonerTome
 		if (resComponent == null)
 			return null;
 		
-		return resComponent.summon(summoner, curLoc);
+		Entity summoned = resComponent.summon(summoner, curLoc);
+		if (summoned != null)
+			SummonUtils.setCode(summoned, resComponent.getCode());
+		return summoned;
 	}
 
 	public void replaceOrAdd(ITomeComponent component)

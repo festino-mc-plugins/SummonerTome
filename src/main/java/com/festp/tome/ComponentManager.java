@@ -8,6 +8,8 @@ import com.festp.components.HorseComponent;
 import com.festp.components.ITomeComponent;
 import com.festp.config.Config;
 import com.festp.config.IConfig;
+import com.festp.handlers.IDataExtractor;
+import com.festp.tome.ComponentInfo.LanguageInfo;
 
 public class ComponentManager
 {
@@ -15,8 +17,7 @@ public class ComponentManager
 	
 	private boolean registerNativeComponents = true;
 	private final List<String> nativeComponents = new ArrayList<>();
-	private final List<IComponentFactory> components = new ArrayList<>();
-	private final List<ComponentInfo> componentInfo = new ArrayList<>();
+	private final List<ComponentInfo> components = new ArrayList<>();
 	
 	public ComponentManager(IConfig config) {
 		this.config = config;
@@ -27,25 +28,29 @@ public class ComponentManager
 	}
 
 	public void register(IComponentFactory factory) {
-		ComponentInfo newInfo = new ComponentInfo(factory.getCode());
-		register(factory, newInfo);
+		register(new ComponentInfo(factory));
 	}
-	public void register(IComponentFactory factory, ComponentInfo info)
+	public void register(ComponentInfo info)
 	{
+		IComponentFactory factory = info.getComponentFactory();
 		String code = factory.getCode();
+		
+		if (info.getLanguageInfo() == null) {
+			LanguageInfo newInfo = new LanguageInfo(code);
+			info.setLanguageInfo(newInfo);
+		}
+		
 		if (!TomeSerializer.canSerialize(code))
 			throw new IllegalArgumentException("Couldn't register code \"" + code + "\"");
-		for (IComponentFactory component : components)
-			if (code.equalsIgnoreCase(component.getCode()))
-				throw new IllegalArgumentException("Repeating register code \"" + code + "\"");
-		components.add(factory);
-		componentInfo.add(info);
+		if (getInfo(code) != null)
+			throw new IllegalArgumentException("Repeating register code \"" + code + "\"");
+		components.add(info);
 		if (registerNativeComponents)
 			nativeComponents.add(code);
 		// try recipe
 		addConfigKey(code, ComponentKey.ALLOW_CRAFTING, true);
 		addConfigKey(code, ComponentKey.ALLOW_USING, true);
-		addConfigKey(code, ComponentKey.BAN_SLOTS_FROM, 0);
+		addConfigKey(code, ComponentKey.BAN_SLOTS_FROM, info.getBehaviourInfo().banSlotsFrom);
 		// TODO custom properties like searching radius
 	}
 
@@ -54,31 +59,40 @@ public class ComponentManager
 	}
 
 	public ComponentInfo getInfo(String code) {
-		for (int i = 0; i < components.size(); i++) {
-			if (code.equalsIgnoreCase(components.get(i).getCode())) {
-				return componentInfo.get(i);
-			}
-		}
+		for (ComponentInfo componentInfo : components)
+			if (code.equalsIgnoreCase(componentInfo.getComponentFactory().getCode()))
+				return componentInfo;
 		return null;
 	}
-	public void updateInfo(String code, ComponentInfo info) {
-		for (int i = 0; i < components.size(); i++) {
-			if (code.equalsIgnoreCase(components.get(i).getCode())) {
-				componentInfo.set(i, info);
-				return;
-			}
-		}
+	
+	private IComponentFactory getFactory(String code) {
+		ComponentInfo componentInfo = getInfo(code);
+		if (componentInfo == null)
+			return null;
+		return componentInfo.getComponentFactory();
+	}
+	public ComponentInfo.LanguageInfo getLangInfo(String code) {
+		ComponentInfo componentInfo = getInfo(code);
+		if (componentInfo == null)
+			return null;
+		return componentInfo.getLanguageInfo();
+	}
+	public void updateLangInfo(String code, LanguageInfo info) {
+		ComponentInfo componentInfo = getInfo(code);
+		if (componentInfo == null)
+			return;
+		componentInfo.setLanguageInfo(info);
 	}
 	
 	public ITomeComponent fromCode(String code)
 	{
 		if (isDisabled(code))
 			return new DisabledComponent(code);
-		IComponentFactory component = tryFind(code);
-		if (component == null)
+		IComponentFactory factory = getFactory(code);
+		if (factory == null)
 			return new MissingComponent(code);
 		//throw new IllegalArgumentException("Unknown component code. Try install new versions of the plugin.");
-		return component.create();
+		return factory.create();
 	}
 
 	public String[] getNativeComponents() {
@@ -98,7 +112,7 @@ public class ComponentManager
 	public String[] getLoadedComponents() {
 		String[] res = new String[components.size()];
 		for (int i = 0; i < res.length; i++)
-			res[i] = components.get(i).getCode();
+			res[i] = components.get(i).getComponentFactory().getCode();
 		return res;
 	}
 
@@ -106,10 +120,10 @@ public class ComponentManager
 	public boolean isCompatible(ITomeComponent comp1, ITomeComponent comp2)
 	{
 		// no factory => MissingComponent
-		IComponentFactory fact1 = tryFind(comp1.getCode());
+		IComponentFactory fact1 = getFactory(comp1.getCode());
 		if (fact1 == null)
 			return softDependenciesMode();
-		IComponentFactory fact2 = tryFind(comp2.getCode());
+		IComponentFactory fact2 = getFactory(comp2.getCode());
 		if (fact2 == null)
 			return softDependenciesMode();
 		
@@ -148,16 +162,14 @@ public class ComponentManager
 		String property = ComponentKey.getPropertyName(code, ComponentKey.BAN_SLOTS_FROM);
 		return config.get(config.getKey(property), 0);
 	}
+
+	public IDataExtractor getDataExtractor(String code) {
+		return getInfo(code).getBehaviourInfo().dataExtractor;
+	}
 	
 	// TODO craft (stylish only, or just register to check for codes)
 	// TODO ban slots (on summon) - config.get(new ComponentKey(code, ComponentKey.BAN_SLOTS_FROM), 0);
 	
-	private IComponentFactory tryFind(String code) {
-		for (IComponentFactory component : components)
-			if (code.equalsIgnoreCase(component.getCode()))
-				return component;
-		return null;
-	}
 	
 	public static class ComponentKey implements IConfig.Key
 	{

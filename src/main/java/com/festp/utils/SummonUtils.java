@@ -16,15 +16,13 @@ import org.bukkit.entity.Pig;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Strider;
 import org.bukkit.inventory.ItemStack;
-
 import com.festp.components.BoatData;
 import com.festp.components.HorseData;
 
 public class SummonUtils
 {
-	private static final String TAG_HAS_SUMMONED = "hassummoned"; 
-	private static final String SBTAG_CUSTOM_HORSE = "customhorse"; 
-	private static final String SBTAG_FROM_TOME = "fromtome"; 
+	private static final String TAG_HAS_SUMMONED = "hassummoned";
+	private static final String TAG_CODE = "tomecode";
 	
 	private static final Material[] BOAT_BLOCKS =
 			{ Material.WATER, Material.ICE, Material.PACKED_ICE, Material.BLUE_ICE, Material.FROSTED_ICE, Material.SEA_PICKLE, Material.SEAGRASS, Material.TALL_SEAGRASS };
@@ -169,7 +167,6 @@ public class SummonUtils
 				newHorse.setTamed(true);
 				newHorse.setOwner(p);
 				newHorse.addPassenger(p);
-				setCustomHorse(newHorse);
 
 				if (!newHorse.isAdult())
 					newHorse.setAgeLock(true);
@@ -197,29 +194,14 @@ public class SummonUtils
 	}
 
 
-	public static boolean wasSummoned(Entity e) {
-		if(e != null) {
-			return e.getScoreboardTags().contains(SBTAG_FROM_TOME);
-		}
-		
-		return false;
+	public static boolean wasSummoned(Entity entity) {
+		return NBTUtils.hasString(entity, TAG_CODE);
 	}
-	public static void setSummoned(Entity e) {
-		if(e != null) {
-			e.addScoreboardTag(SBTAG_FROM_TOME);
-		}
+	public static String getCode(Entity entity) {
+		return NBTUtils.getString(entity, TAG_CODE);
 	}
-	public static boolean isCustomHorse(Entity horse) {
-		if(horse != null && horse instanceof AbstractHorse) {
-			return horse.getScoreboardTags().contains(SBTAG_CUSTOM_HORSE);
-		}
-		
-		return false;
-	}
-	public static void setCustomHorse(Entity horse) {
-		if(horse != null && horse instanceof AbstractHorse) {		
-			horse.addScoreboardTag(SBTAG_CUSTOM_HORSE);
-		}
+	public static void setCode(Entity entity, String code) {
+		NBTUtils.setString(entity, TAG_CODE, code);
 	}
 	
 	public static boolean hasSummoned(ItemStack tome) {

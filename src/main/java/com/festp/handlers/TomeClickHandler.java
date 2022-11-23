@@ -11,6 +11,7 @@ import org.bukkit.inventory.ItemStack;
 
 import com.festp.Permissions;
 import com.festp.config.FeedbackEffects;
+import com.festp.tome.ComponentManager;
 import com.festp.tome.SummonerTome;
 import com.festp.utils.SummonUtils;
 import com.festp.utils.UtilsType;
@@ -34,11 +35,15 @@ public class TomeClickHandler implements Listener
 			this.entity = entity;
 		}
 	}
-	
+
 	private final FeedbackEffects feedbackEffects;
+	private final ComponentManager componentManager;
+	private final TomeInventoryHandler inventoryHandler;
 	
-	public TomeClickHandler(FeedbackEffects feedbackEffects) {
+	public TomeClickHandler(FeedbackEffects feedbackEffects, ComponentManager componentManager, TomeInventoryHandler inventoryHandler) {
 		this.feedbackEffects = feedbackEffects;
+		this.componentManager = componentManager;
+		this.inventoryHandler = inventoryHandler;
 	}
 	
 	// Customization (swap an entity with the tome entity)
@@ -148,11 +153,16 @@ public class TomeClickHandler implements Listener
 			return res;
 		
 		event.setCancelled(true);
-		SummonUtils.setSummoned(summoned);
 		SummonUtils.setHasSummoned(player, inMainHand, summoned);
 		String customName = getCustomName(item);
 		if (customName != null) {
 			summoned.setCustomName(customName);
+		}
+		String code = SummonUtils.getCode(summoned);
+		if (code != null) {
+			int banSlotsFrom = componentManager.getBanSlotsFrom(code);
+			IDataExtractor dataExtractor = componentManager.getDataExtractor(code);
+			inventoryHandler.listenInventory(summoned, banSlotsFrom, dataExtractor);
 		}
 		return res;
 	}

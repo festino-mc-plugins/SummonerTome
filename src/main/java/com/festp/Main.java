@@ -8,7 +8,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.festp.commands.MainCommand;
 import com.festp.components.BoatComponent;
+import com.festp.components.BoatDataExtractor;
 import com.festp.components.CustomHorseComponentFactory;
+import com.festp.components.CustomHorseDataExtractor;
 import com.festp.components.HorseComponent;
 import com.festp.components.MinecartComponent;
 import com.festp.components.PigComponent;
@@ -49,10 +51,17 @@ public class Main extends JavaPlugin
     	ComponentManager componentManager = new ComponentManager(config);
     	// TODO localization? - use only updateInfo()
     	componentManager.register(new SimpleComponentFactory(MinecartComponent.class));
-    	componentManager.register(new SimpleComponentFactory(BoatComponent.class));
+    	ComponentInfo boatInfo = new ComponentInfo(
+    			new SimpleComponentFactory(BoatComponent.class),
+    			new ComponentInfo.BehaviourInfo(27, new BoatDataExtractor()));
+    	componentManager.register(boatInfo);
     	componentManager.register(new SimpleComponentFactory(PigComponent.class));
     	componentManager.register(new SimpleComponentFactory(HorseComponent.class));
-    	componentManager.register(new CustomHorseComponentFactory(), new ComponentInfo("custom horse", "Advanced %s", "Advanced horse tome"));
+    	ComponentInfo customHorseInfo = new ComponentInfo(
+    			new CustomHorseComponentFactory(),
+    			new ComponentInfo.LanguageInfo("custom horse", "Advanced %s", "Advanced horse tome"),
+    			new ComponentInfo.BehaviourInfo(27, new CustomHorseDataExtractor()));
+    	componentManager.register(customHorseInfo);
     	if (UtilsVersion.SUPPORTS_STRIDER)
     		componentManager.register(new SimpleComponentFactory(StriderComponent.class));
     	componentManager.stopRegisterAsNative();
@@ -69,10 +78,10 @@ public class Main extends JavaPlugin
     	getCommand(MainCommand.COMMAND).setExecutor(command);
     	
     	FeedbackEffects feedback = new FeedbackEffects(config);
-    	TomeClickHandler clickHandler = new TomeClickHandler(feedback);
-    	pm.registerEvents(clickHandler, this);
     	TomeInventoryHandler inventoryHandler = new TomeInventoryHandler();
     	pm.registerEvents(inventoryHandler, this);
+    	TomeClickHandler clickHandler = new TomeClickHandler(feedback, componentManager, inventoryHandler);
+    	pm.registerEvents(clickHandler, this);
     	TomeEntityHandler entityHandler = new TomeEntityHandler(feedback);
     	pm.registerEvents(entityHandler, this);
     	

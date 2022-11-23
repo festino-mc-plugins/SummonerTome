@@ -56,7 +56,7 @@ public class TomeItemBuilder
 			if (!newTome.hasComponent(code))
 				continue;
 			
-			String componentFormat = componentManager.getInfo(code).tomeNameFormat;
+			String componentFormat = componentManager.getLangInfo(code).tomeNameFormat;
 			if (componentFormat != null)
 				format = String.format(componentFormat, format);
 
@@ -72,7 +72,7 @@ public class TomeItemBuilder
 				else
 					list.append(LORE_SEP);
 			}
-			String loreName = componentManager.getInfo(codes.get(i)).lorePetName;
+			String loreName = componentManager.getLangInfo(codes.get(i)).lorePetName;
 			list.append(loreName);
 		}
 		String lore = String.format(LORE_TEMPLATE, list);
@@ -80,11 +80,11 @@ public class TomeItemBuilder
 		String name;
 		boolean decorateName = true;
 		if (codes.size() == 1) {
-			name = componentManager.getInfo(codes.get(0)).soloTomeName;
+			name = componentManager.getLangInfo(codes.get(0)).soloTomeName;
 			if (name != null) {
 				decorateName = false;
 			} else {
-				String loreName = componentManager.getInfo(codes.get(0)).lorePetName;
+				String loreName = componentManager.getLangInfo(codes.get(0)).lorePetName;
 				String entityName = String.format(NAME_ONE_TYPE_TEMPLATE, capitalize(loreName.toLowerCase()));
 				entityName = Character.toUpperCase(entityName.charAt(0)) + entityName.substring(1);
 				name = String.format(NAME_ONE_TYPE_TEMPLATE, entityName);

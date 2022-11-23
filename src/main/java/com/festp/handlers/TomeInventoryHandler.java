@@ -4,11 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.Material;
-import org.bukkit.entity.AbstractHorse;
-import org.bukkit.entity.Boat;
-import org.bukkit.entity.ChestBoat;
-import org.bukkit.entity.ChestedHorse;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Horse;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -21,141 +18,152 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
-import com.festp.components.BoatComponent;
-import com.festp.components.BoatData;
-import com.festp.components.CustomHorseComponent;
-import com.festp.components.HorseData;
+import com.festp.components.ITomeComponent;
 import com.festp.tome.SummonerTome;
 import com.festp.utils.SummonUtils;
 import com.festp.utils.UtilsType;
 
 public class TomeInventoryHandler implements Listener
 {
-	private List<Entity> saveEntity = new ArrayList<>();
-	private List<Player> savePlayer = new ArrayList<>();
-	
-	public void addSavingTome(Entity horse, Player p) {
-		saveEntity.add(horse);
-		savePlayer.add(p);
+	private static class EntityInfo {
+		public final Entity summoned;
+		public final int banSlotsFrom;
+		public final IDataExtractor dataExtractor;
+		
+		public EntityInfo(Entity summoned, int banSlotsFrom, IDataExtractor dataExtractor) {
+			this.summoned = summoned;
+			this.banSlotsFrom = banSlotsFrom;
+			this.dataExtractor = dataExtractor;
+		}
+		
 	}
+	private final List<EntityInfo> entities = new ArrayList<>();
+	
+	private final List<EntityInfo> saveEntity = new ArrayList<>();
+	private final List<Player> savePlayer = new ArrayList<>();
 	
 	public void tick() {
+		for (int i = entities.size() - 1; i >= 0; i--) {
+			if (!entities.get(i).summoned.isValid())
+				entities.remove(i);
+		}
 		for (int i = saveEntity.size() - 1; i >= 0; i--) {
-			if (!saveEntityData(saveEntity.get(i), savePlayer.get(i)))
-				saveEntity.get(i).remove();
+			EntityInfo info = saveEntity.get(i);
+			if (!saveEntityData(info, savePlayer.get(i)))
+				info.summoned.remove();
 			saveEntity.remove(i);
 			savePlayer.remove(i);
 		}
 	}
-	@EventHandler
-	public void onBoatInventoryClick(InventoryClickEvent event)
-	{
-		if (!startEvent(event))
-			return;
-		Inventory topInv = event.getView().getTopInventory();
-		if (!(topInv.getHolder() instanceof ChestBoat))
-			return;
-		trySaveEntity((Player) event.getWhoClicked(), (Entity)topInv.getHolder());
+
+	// TODO allowed slots (horses ban 0): "0..26", "1.."
+	public void listenInventory(Entity summoned, int banSlotsFrom, IDataExtractor dataExtractor) {
+		entities.add(new EntityInfo(summoned, banSlotsFrom, dataExtractor));
 	}
-	@EventHandler
-	public void onBoatInventoryDrag(InventoryDragEvent event)
-	{
-		if (!startEvent(event))
-			return;
-		Inventory topInv = event.getView().getTopInventory();
-		if (!(topInv.getHolder() instanceof ChestBoat))
-			return;
-		trySaveEntity((Player) event.getWhoClicked(), (Entity)topInv.getHolder());
+	
+	private EntityInfo findEntity(Entity holder) {
+		for (EntityInfo info : entities)
+			if (info.summoned.equals(holder))
+				return info;
+		return null;
+	}
+	
+	private void addSavingTome(EntityInfo info, Player p) {
+		saveEntity.add(info);
+		savePlayer.add(p);
 	}
 
 	// Horse slots and move tome to other inventories
 	@EventHandler
-	public void onHorseInventoryClick(InventoryClickEvent event)
+	public void onClick(InventoryClickEvent event)
 	{
 		if (!startEvent(event))
 			return;
-		
-		Inventory topInv = event.getView().getTopInventory();
-		if (!(topInv.getHolder() instanceof AbstractHorse))
-			return;
-		AbstractHorse horse = (AbstractHorse)topInv.getHolder();
 
 		InventoryAction action = event.getAction();
 		if (action == InventoryAction.CLONE_STACK)
 			return;
 		
+		Inventory topInv = event.getView().getTopInventory();
+		if (!(topInv.getHolder() instanceof Entity))
+			return;
+		
+		EntityInfo info = findEntity((Entity)topInv.getHolder());
+		if (info == null) {
+			event.setCancelled(true);
+			return;
+		}
+		
 		int slot = event.getRawSlot();
-		if (slot < 0) return;
+		if (slot < 0)
+			return;
 
 		boolean illegal = false;
 		Inventory inv = event.getClickedInventory();
-		if (inv instanceof AbstractHorseInventory)
+		// check if try move horse armor to non-custom horse
+		if (inv instanceof PlayerInventory)
 		{
-			// removing the saddle is always illegal
-			if (slot == 0)
-			{
-				if (action != InventoryAction.UNKNOWN)
-					illegal = true;
-			}
-			else if (!SummonUtils.isCustomHorse(horse))
-			{
-				// is saddle/armor or is chested horse inventory
-				if (slot < 2 || slot < 17 && horse instanceof ChestedHorse && ((ChestedHorse)horse).isCarryingChest())
-					if (action != InventoryAction.UNKNOWN)
+			if (action == InventoryAction.MOVE_TO_OTHER_INVENTORY) {
+				if (topInv.getHolder() instanceof Horse && info.banSlotsFrom <= 1) {
+					Material m = event.getCurrentItem().getType();
+					ItemStack horseArmor = event.getView().getItem(1);
+					if ((horseArmor == null || horseArmor.getType() == Material.AIR) && UtilsType.isHorseArmor(m)) {
 						illegal = true;
+					}
+				}
+				else {
+					if (info.banSlotsFrom < topInv.getSize()) {
+						illegal = true;
+					}
+				}
 			}
 		}
-		// check if try move horse armor to non-custom horse
-		else if (inv instanceof PlayerInventory)
+		else
 		{
-			Material m = event.getCurrentItem().getType();
-			ItemStack horseArmor = event.getView().getItem(1);
-			if ((horseArmor == null || horseArmor.getType() == Material.AIR) && UtilsType.isHorseArmor(m)) {
-				if (action == InventoryAction.MOVE_TO_OTHER_INVENTORY) {
-					if (!SummonUtils.isCustomHorse(horse))
-						illegal = true;
-				}
+			if (action != InventoryAction.UNKNOWN)
+				if (info.banSlotsFrom <= slot)
+					illegal = true;
+			// removing the saddle is always illegal
+			if (inv instanceof AbstractHorseInventory) {
+				if (slot == 0)
+					illegal = true;
 			}
 		}
 
 		if (illegal)
 			event.setCancelled(true);
 		else
-			trySaveEntity((Player) event.getWhoClicked(), horse);
+			trySaveEntity((Player) event.getWhoClicked(), info);
 	}
-	
+
 	@EventHandler
-    public void onHorseDrag(InventoryDragEvent event)
+    public void onDrag(InventoryDragEvent event)
 	{
 		if (!startEvent(event))
 			return;
 		
 		Inventory topInv = event.getView().getTopInventory();
-		if (!(topInv.getHolder() instanceof AbstractHorse))
+		if (!(topInv.getHolder() instanceof Entity))
 			return;
-		AbstractHorse horse = (AbstractHorse)topInv.getHolder();
-		
-		boolean affectsHorse = false;
-		int maxHorseSlot = topInv.getSize();
+
+		EntityInfo info = findEntity((Entity)topInv.getHolder());
+		if (info == null) {
+			event.setCancelled(true);
+			return;
+		}
+
+		boolean illegal = false;
+		int maxSlot = topInv.getSize();
 		for (Integer slot : event.getInventorySlots())
-			if (slot < maxHorseSlot) {
-				affectsHorse = true;
+			if (slot < maxSlot && info.banSlotsFrom <= slot) {
+				illegal = true;
 				break;
 			}
-		
-		boolean illegal = false;
-		if (affectsHorse)
-		{
-			if (!SummonUtils.isCustomHorse(horse))
-			{
-				illegal = true;
-			}
-		}
 
 		if (illegal)
 			event.setCancelled(true);
 		else
-			trySaveEntity((Player) event.getWhoClicked(), horse);
+			trySaveEntity((Player) event.getWhoClicked(), info);
 	}
 	
 	/** Checks if the top inventory is an inventory of a summoned entity. If the entity is illegal, it will be removed. */
@@ -180,11 +188,11 @@ public class TomeInventoryHandler implements Listener
 		
 		return true;
 	}
-	private void trySaveEntity(Player player, Entity entity)
+	/** delayed tome update (player has modified inventory) */
+	private void trySaveEntity(Player player, EntityInfo info)
 	{
-		// delayed tome update (player has modified inventory)
-		if (SummonUtils.isCustomHorse(entity) || entity instanceof ChestBoat)
-			addSavingTome(entity, player);
+		if (info.dataExtractor != null)
+			addSavingTome(info, player);
 	}
 	
 	private static int findTomeSlot(ItemStack[] inv, Entity entity)
@@ -213,20 +221,19 @@ public class TomeInventoryHandler implements Listener
 		}
 		return true;
 	}
-	private static boolean saveEntityData(Entity entity, Player p)
+	
+	private static boolean saveEntityData(EntityInfo info, Player p)
 	{
 		if (p.isOnline()) {
 			ItemStack[] playerInv = p.getInventory().getContents();
-			int slot = findTomeSlot(playerInv, entity);
+			int slot = findTomeSlot(playerInv, info.summoned);
 			if (slot < 0) {
 				return false;
 			}
 			else {
-				ItemStack modifiedTome = null;
-				if (entity instanceof AbstractHorse)
-					modifiedTome = setHorseData(playerInv[slot], HorseData.fromHorse((AbstractHorse)entity));
-				else if (entity instanceof Boat)
-					modifiedTome = setBoatData(playerInv[slot], BoatData.fromBoat((Boat)entity));
+				ItemStack oldTome = playerInv[slot];
+				ITomeComponent modifiedComponent = info.dataExtractor.extract(oldTome, info.summoned);
+				ItemStack modifiedTome = addOrReplaceComponent(oldTome, modifiedComponent);
 				playerInv[slot] = modifiedTome;
 				p.getInventory().setContents(playerInv);
 				return true;
@@ -234,24 +241,10 @@ public class TomeInventoryHandler implements Listener
 		}
 		return false;
 	}
-	
-	// TODO refactor boat and horse inventory saving
-	// options: IInventorySetter#setData(ItemStack, Entity), register Entity on summon
-	// ban all summoned inventories by default
-	public static ItemStack setHorseData(ItemStack item, HorseData horseData)
+	private static ItemStack addOrReplaceComponent(ItemStack oldTome, ITomeComponent replacedComponent)
 	{
-		SummonerTome tome = SummonerTome.getTome(item);
-	    CustomHorseComponent comp = new CustomHorseComponent();
-	    comp.setHorseData(horseData);
-	    tome.replaceOrAdd(comp);
-		return tome.setTome(item);
-	}
-	public static ItemStack setBoatData(ItemStack item, BoatData boatData)
-	{
-		SummonerTome tome = SummonerTome.getTome(item);
-	    BoatComponent comp = new BoatComponent();
-	    comp.setBoatData(boatData);
-	    tome.replaceOrAdd(comp);
-		return tome.setTome(item);
+		SummonerTome tome = SummonerTome.getTome(oldTome);
+	    tome.replaceOrAdd(replacedComponent);
+		return tome.setTome(oldTome);
 	}
 }
