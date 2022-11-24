@@ -83,9 +83,10 @@ public class MainCommand  implements CommandExecutor, TabCompleter
 			}
 			Player p = (Player)sender;
 			
-			ItemStack item = getItem(getComponentString(args));
+			GetItemResult itemRes = getItem(getComponentString(args));
+			ItemStack item = itemRes.getItem();
 			if (item == null) {
-				sender.sendMessage(String.format(lang.get_components_error, "not implemented"));
+				sender.sendMessage(String.format(lang.get_components_error, itemRes.getMissingComponentCode()));
 				return true;
 			}
 			
@@ -179,8 +180,23 @@ public class MainCommand  implements CommandExecutor, TabCompleter
 		return false;
 	}
 
+	private static class GetItemResult {
+		private final ItemStack item;
+		private final String missingComponentCode;
+		
+		public GetItemResult(ItemStack item, String missingComponentCode) {
+			this.item = item;
+			this.missingComponentCode = missingComponentCode;
+		}
+		public ItemStack getItem() {
+			return item;
+		}
+		public String getMissingComponentCode() {
+			return missingComponentCode;
+		}
+	}
 	// all/custom_all or <list>, e.g. "minecart boat"
-	private ItemStack getItem(String str)
+	private GetItemResult getItem(String str)
 	{
 		str = str.toLowerCase();
 		String[] componentNames;
@@ -195,10 +211,11 @@ public class MainCommand  implements CommandExecutor, TabCompleter
 		for (int i = 0; i < componentNames.length; i++) {
 			components[i] = componentManager.fromCode(componentNames[i]);
 			if (components[i] instanceof MissingComponent)
-				return null;
+				return new GetItemResult(null, componentNames[i]);
 		}
 		
-		return TomeItemBuilder.getNewTome(components);
+		ItemStack item = TomeItemBuilder.getNewTome(components);
+		return new GetItemResult(item, null);
 	}
 
 	
