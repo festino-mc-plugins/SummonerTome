@@ -155,7 +155,10 @@ public class ComponentManager
 
 	private boolean isDisabled(String code) {
 		String property = ComponentKey.getPropertyName(code, ComponentKey.ALLOW_USING);
-		return !config.get(config.getKey(property), false);
+		IConfig.Key key = config.getKey(property);
+		if (key == null)
+			return false;
+		return !config.get(key, false);
 	}
 
 	public int getBanSlotsFrom(String code) {
