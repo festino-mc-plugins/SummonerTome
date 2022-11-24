@@ -29,6 +29,7 @@ public class Config implements IConfig
 	}
 	
 	public void load() {
+		lang.load();
 		File configFile = new File(plugin.getDataFolder(), "config.yml");
 		if (!configFile.exists())
 			FileUtils.copyFileFromResource(configFile, "config.yml");
@@ -40,6 +41,7 @@ public class Config implements IConfig
 	}
 
 	public void save() {
+		//lang.load(); can't be modified
 		saveSilently();
 		Logger.info(lang.config_save);
 	}
