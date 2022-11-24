@@ -9,6 +9,7 @@ import org.bukkit.inventory.ItemStack;
 
 import com.festp.components.ITomeComponent;
 import com.festp.crafting.TomeItemBuilder;
+import com.festp.handlers.TomeEntityHandler;
 import com.festp.utils.SummonUtils;
 
 public class SummonerTome
@@ -40,6 +41,8 @@ public class SummonerTome
 
 	public boolean trySwap(Entity entity)
 	{
+		if (!TomeEntityHandler.canReplaceEntity(entity))
+			return false;
 		for (ITomeComponent comp : components)
 			if (comp.trySwap(entity))
 				return true;

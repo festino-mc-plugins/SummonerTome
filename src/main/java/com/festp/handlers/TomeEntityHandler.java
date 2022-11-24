@@ -1,6 +1,7 @@
 package com.festp.handlers;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -14,6 +15,7 @@ import org.bukkit.event.vehicle.VehicleDestroyEvent;
 import org.bukkit.event.vehicle.VehicleExitEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.ItemStack;
 
 import com.festp.DelayedTask;
 import com.festp.TaskList;
@@ -105,10 +107,36 @@ public class TomeEntityHandler implements Listener
 		eject(entity);
 		entity.remove();
 	}
-	
+
+	/** analyze: is leashed (configurable) */
+	public static boolean canReplaceEntity(Entity oldEntity)
+	{
+		if (oldEntity instanceof LivingEntity) {
+			LivingEntity oldLiving = (LivingEntity) oldEntity;
+			if (oldLiving.isLeashed()) {
+				// TODO return config entry
+				return true;
+			}
+		}
+		return true;
+	}
+	/** try to keep state: leash */
 	public static void replaceEntity(Entity oldEntity, Entity newEntity)
 	{
 		Location loc = oldEntity.getLocation();
+		
+		if (oldEntity instanceof LivingEntity) {
+			LivingEntity oldLiving = (LivingEntity) oldEntity;
+			if (oldLiving.isLeashed()) {
+				// may be cancel replacing - canReplaceEntity returns false
+				Entity leashHolder = oldLiving.getLeashHolder();
+				if (newEntity instanceof LivingEntity)
+					((LivingEntity)newEntity).setLeashHolder(leashHolder);
+				else
+					loc.getWorld().dropItemNaturally(loc, new ItemStack(Material.LEAD));
+			}
+		}
+		
 		TomeEntityHandler.removeEntitySilently(oldEntity);
 		newEntity.teleport(loc);
 	}
