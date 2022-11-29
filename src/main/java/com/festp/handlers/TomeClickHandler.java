@@ -1,6 +1,7 @@
 package com.festp.handlers;
 
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -67,7 +68,9 @@ public class TomeClickHandler implements Listener
 		boolean entityIsSummoned = SummonUtils.wasSummoned(entity);
 		if (entityIsSummoned) {
 			// disable nametags, breeding, etc
-			event.setCancelled(true);
+			// TODO custom summoned entity interaction
+			if (entity instanceof LivingEntity) // boat second passenger
+				event.setCancelled(true);
 		}
 		
 		boolean mainHand = true;
