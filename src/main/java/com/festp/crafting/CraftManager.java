@@ -13,7 +13,8 @@ import org.bukkit.inventory.Recipe;
 import org.bukkit.plugin.PluginManager;
 
 import com.festp.Main;
-import com.festp.config.Config;
+import com.festp.config.IConfig;
+import com.festp.config.LangConfig;
 import com.festp.tome.ComponentManager;
 
 public class CraftManager implements Listener {
@@ -25,15 +26,19 @@ public class CraftManager implements Listener {
 	
 	List<NamespacedKey> recipeKeys = new ArrayList<>();
 	
-	public CraftManager(Main plugin, Server server, Config config, ComponentManager componentManager) {
+	public CraftManager(Main plugin, Server server, IConfig config, LangConfig langConfig, ComponentManager componentManager) {
 		this.plugin = plugin;
 		this.server = server;
     	this.craftHandler = new TomeCraftHandler(plugin, config, this, componentManager);
+    	langConfig.addListener(craftHandler);
 	}
 
 	public void registerEvents(PluginManager pm) {
     	pm.registerEvents(this, plugin);
     	pm.registerEvents(craftHandler, plugin);
+    	// server reload command
+    	for (Player player : server.getOnlinePlayers())
+    		giveRecipes(player);
 	}
 	
 	public void addCrafts() {
@@ -42,19 +47,30 @@ public class CraftManager implements Listener {
 	private void giveRecipe(HumanEntity player, NamespacedKey key) {
 		player.discoverRecipe(key);
 	}
-	
-	@EventHandler
-	public void onPlayerJoin(PlayerJoinEvent event) {
-		Player p = event.getPlayer();
+	private void giveRecipes(HumanEntity player) {
 		for (NamespacedKey recipeKey : recipeKeys) {
-			giveRecipe(p, recipeKey);
+			giveRecipe(player, recipeKey);
 		}
 	}
 	
+	@EventHandler
+	public void onPlayerJoin(PlayerJoinEvent event) {
+		Player player = event.getPlayer();
+		giveRecipes(player);
+	}
+	
 	public boolean addRecipe(NamespacedKey key, Recipe recipe) {
-		if (recipeKeys.contains(key))
+		if (recipeKeys.contains(key)) {
+			recipeKeys.remove(key);
+	    	for (Player player : server.getOnlinePlayers())
+	    		player.undiscoverRecipe(key);
+			server.removeRecipe(key);
+		}
+		
+		if (!server.addRecipe(recipe))
 			return false;
-		server.addRecipe(recipe);
+    	for (Player player : server.getOnlinePlayers())
+    		player.discoverRecipe(key);
 		recipeKeys.add(key);
 		return true;
 	}

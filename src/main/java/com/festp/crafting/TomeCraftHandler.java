@@ -29,12 +29,14 @@ import com.festp.components.MinecartComponent;
 import com.festp.components.PigComponent;
 import com.festp.components.StriderComponent;
 import com.festp.config.Config;
+import com.festp.config.IConfig;
+import com.festp.config.IConfigListener;
 import com.festp.tome.ComponentManager;
 import com.festp.tome.SummonerTome;
 import com.festp.utils.Utils;
 import com.festp.utils.UtilsRandom;
 
-public class TomeCraftHandler implements Listener
+public class TomeCraftHandler implements Listener, IConfigListener
 {
 	private Main plugin;
 	private CraftManager craftManager;
@@ -43,14 +45,18 @@ public class TomeCraftHandler implements Listener
 	private Recipe boatRecipe;
 	private Recipe customHorseRecipe;
 	private Recipe combineRecipe;
-	private Config config;
+	private IConfig config;
 	
-	public TomeCraftHandler(Main plugin, Config config, CraftManager craftManager, ComponentManager componentManager)
+	public TomeCraftHandler(Main plugin, IConfig config, CraftManager craftManager, ComponentManager componentManager)
 	{
 		this.plugin = plugin;
 		this.config = config;
 		this.craftManager = craftManager;
 		this.componentManager = componentManager;
+	}
+	
+	public void onUpdate(IConfig config) {
+		addTomeCrafts();
 	}
 	
 	public void addTomeCrafts()

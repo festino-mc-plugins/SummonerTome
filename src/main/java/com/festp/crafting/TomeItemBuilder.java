@@ -22,9 +22,9 @@ public class TomeItemBuilder
 	public static final String NAME_ALL_TEMPLATE = "United tome";
 	public static final String NAME_MIXED_TEMPLATE = "Combined tome";
 	public static final String NAME_ONE_TYPE_TEMPLATE = "%s tome";
+	public static final String LORE_TEMPLATE = "Summons %s";
 	public static final String LORE_SEP = ", ";
 	public static final String LORE_OR = " or ";
-	public static final String LORE_TEMPLATE = "Summons %s";
 	
 	private static ComponentManager componentManager;
 	public static void setComponentManager(ComponentManager componentManager) {
@@ -86,7 +86,7 @@ public class TomeItemBuilder
 			} else {
 				String loreName = componentManager.getLangInfo(codes.get(0)).lorePetName;
 				String entityName = String.format(NAME_ONE_TYPE_TEMPLATE, capitalize(loreName.toLowerCase()));
-				entityName = Character.toUpperCase(entityName.charAt(0)) + entityName.substring(1);
+				entityName = capitalize(entityName);
 				name = String.format(NAME_ONE_TYPE_TEMPLATE, entityName);
 			}
 		} else if (isAnyAllTome) {

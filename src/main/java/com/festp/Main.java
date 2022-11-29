@@ -70,7 +70,7 @@ public class Main extends JavaPlugin
     	TomeSerializer.setComponentManager(componentManager);
     	TomeItemBuilder.setComponentManager(componentManager);
     	
-    	craftManager = new CraftManager(this, getServer(), config, componentManager);
+    	craftManager = new CraftManager(this, getServer(), config, lang, componentManager);
     	craftManager.registerEvents(pm);
     	craftManager.addCrafts();
     	
