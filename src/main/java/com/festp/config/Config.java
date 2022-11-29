@@ -11,16 +11,17 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.festp.Logger;
 import com.festp.config.FileUtils;
+import com.festp.config.LangConfig.LangKey;
 
 public class Config implements IConfig
 {
 	private JavaPlugin plugin;
-	private LangConfig lang;
+	private IConfig lang;
 	private MemoryConfiguration config;
 	private final HashMap<String, Object> map = new HashMap<>();
 	private final HashMap<String, IConfig.Key> keyMap = new HashMap<>();
 	
-	public Config(JavaPlugin jp, LangConfig lang) {
+	public Config(JavaPlugin jp, IConfig lang) {
 		this.plugin = jp;
 		this.lang = lang;
 		for (Key key : Key.values()) {
@@ -29,7 +30,6 @@ public class Config implements IConfig
 	}
 	
 	public void load() {
-		lang.load();
 		File configFile = new File(plugin.getDataFolder(), "config.yml");
 		if (!configFile.exists())
 			FileUtils.copyFileFromResource(configFile, "config.yml");
@@ -37,18 +37,14 @@ public class Config implements IConfig
 		config = plugin.getConfig();
 		map.putAll(config.getValues(true)); // ignore keyMap
 		saveSilently();
-		Logger.info(lang.config_reload);
+		Logger.info(lang.get(LangKey.CONFIG_RELOAD));
 	}
 
 	public void save() {
-		//lang.load(); can't be modified
 		saveSilently();
-		Logger.info(lang.config_save);
+		Logger.info(lang.get(LangKey.CONFIG_SAVE));
 	}
 	public void saveSilently() {
-		/*for (Key key : Key.values()) {
-			config.set(key.name, get(key));
-		}*/
 		for (String name : getKeys()) {
 			if (getKey(name) != null)
 				config.set(name, get(name));
@@ -70,8 +66,13 @@ public class Config implements IConfig
 		saveSilently();
 	}
 	private void setNoSave(IConfig.Key key, Object value) {
-		map.put(key.toString(), value);
-		keyMap.put(key.toString(), key);
+		String keyStr = key.toString();
+		if (!keyMap.containsKey(keyStr)) {
+			keyMap.put(keyStr, key);
+			if (map.containsKey(keyStr))
+				return; // loaded from file, later added by ComponentManager
+		}
+		map.put(keyStr, value);
 	}
 	
 	public Object get(String keyName, Object defaultValue) {

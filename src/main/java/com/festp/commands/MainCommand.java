@@ -20,7 +20,7 @@ import com.festp.Permissions;
 import com.festp.components.ITomeComponent;
 import com.festp.config.Config;
 import com.festp.config.IConfig;
-import com.festp.config.LangConfig;
+import com.festp.config.LangConfig.LangKey;
 import com.festp.crafting.TomeItemBuilder;
 import com.festp.tome.ComponentManager;
 import com.festp.tome.MissingComponent;
@@ -42,12 +42,12 @@ public class MainCommand  implements CommandExecutor, TabCompleter
 			+ "\n  /" + COMMAND + " " + SUBCOMMAND_CONFIG + " " + Config.Key.EFFECTS_PLAYSOUND.toString() + " true";
 
 	IConfig config;
-	LangConfig lang;
+	IConfig lang;
 	ComponentManager componentManager;
 	
 	List<String> aliases = new ArrayList<>();
 	
-	public MainCommand(IConfig config, LangConfig lang, ComponentManager componentManager) {
+	public MainCommand(IConfig config, IConfig lang, ComponentManager componentManager) {
 		this.config = config;
 		this.lang = lang;
 		this.componentManager = componentManager;
@@ -73,12 +73,12 @@ public class MainCommand  implements CommandExecutor, TabCompleter
 		if (subcommand.equalsIgnoreCase(SUBCOMMAND_GET))
 		{
 			if (!sender.hasPermission(Permissions.GET)) {
-				sender.sendMessage(String.format(lang.command_noPerm, Permissions.GET));
+				sender.sendMessage(String.format(lang.get(LangKey.COMMAND_NO_PERM, "%s"), Permissions.GET));
 				return false;
 			}
 			
 			if (!(sender instanceof Player)) {
-				sender.sendMessage(lang.get_noPlayer);
+				sender.sendMessage(lang.get(LangKey.COMMAND_NO_PLAYER, ""));
 				return false;
 			}
 			Player p = (Player)sender;
@@ -86,7 +86,7 @@ public class MainCommand  implements CommandExecutor, TabCompleter
 			GetItemResult itemRes = getItem(getComponentString(args));
 			ItemStack item = itemRes.getItem();
 			if (item == null) {
-				sender.sendMessage(String.format(lang.get_components_error, itemRes.getMissingComponentCode()));
+				sender.sendMessage(String.format(lang.get(LangKey.COMMAND_INVALID_COMPONENTS, "%s"), itemRes.getMissingComponentCode()));
 				return true;
 			}
 			
@@ -103,7 +103,7 @@ public class MainCommand  implements CommandExecutor, TabCompleter
 						return true;
 					}
 				}
-				sender.sendMessage(lang.get_space_error);
+				sender.sendMessage(lang.get(LangKey.COMMAND_NO_SPACE, ""));
 				return false;
 			}
 			return true;
@@ -111,11 +111,11 @@ public class MainCommand  implements CommandExecutor, TabCompleter
 		if (subcommand.equalsIgnoreCase(SUBCOMMAND_CONFIG))
 		{
 			if (!sender.hasPermission(Permissions.CONFIGURE)) {
-				sender.sendMessage(String.format(lang.command_noPerm, Permissions.CONFIGURE));
+				sender.sendMessage(String.format(lang.get(LangKey.COMMAND_NO_PERM, "%s"), Permissions.CONFIGURE));
 				return false;
 			}
 			if (args.length == 1) {
-				sender.sendMessage(lang.command_noArgs);
+				sender.sendMessage(lang.get(LangKey.COMMAND_NO_ARGS, ""));
 				return true;
 			}
 			
@@ -128,17 +128,17 @@ public class MainCommand  implements CommandExecutor, TabCompleter
 			if (key != null)
 			{
 				if (args.length == 2) {
-					sender.sendMessage(String.format(lang.config_getOk, key.toString(), config.get(key)));
+					sender.sendMessage(String.format(lang.get(LangKey.COMMAND_CONFIG_GET_OK, "%s = %s"), key.toString(), config.get(key)));
 					return true;
 				}
 				Object val = key.validateValue(args[2]);
 				if (val == null) {
-					sender.sendMessage(String.format(lang.config_value_error, key));
+					sender.sendMessage(String.format(lang.get(LangKey.COMMAND_CONFIG_VAL_ERROR, "%s"), key));
 					return false;
 				}
 				
 				config.set(key, val);
-				sender.sendMessage(String.format(lang.config_setOk, key.toString(), val));
+				sender.sendMessage(String.format(lang.get(LangKey.COMMAND_CONFIG_SET_OK, "%s = %s"), key.toString(), val));
 				
 				return true;
 			}
@@ -146,11 +146,11 @@ public class MainCommand  implements CommandExecutor, TabCompleter
 			{
 				config.load();
 				lang.load();
-				sender.sendMessage(lang.config_reloadOk);
+				sender.sendMessage(lang.get(LangKey.COMMAND_CONFIG_RELOAD_OK, ""));
 				return true;
 			}
 			
-			sender.sendMessage(String.format(lang.config_key_error, args[1]));
+			sender.sendMessage(String.format(lang.get(LangKey.COMMAND_CONFIG_KEY_ERROR, "%s"), args[1]));
 			
 			return true;
 		}

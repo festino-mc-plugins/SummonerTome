@@ -14,13 +14,15 @@ import com.festp.tome.ComponentInfo.LanguageInfo;
 public class ComponentManager
 {
 	private final IConfig config;
+	private final IConfig langConfig;
 	
 	private boolean registerNativeComponents = true;
 	private final List<String> nativeComponents = new ArrayList<>();
 	private final List<ComponentInfo> components = new ArrayList<>();
 	
-	public ComponentManager(IConfig config) {
+	public ComponentManager(IConfig config, IConfig langConfig) {
 		this.config = config;
+		this.langConfig = langConfig;
 	}
 	
 	public void stopRegisterAsNative() {
@@ -52,10 +54,20 @@ public class ComponentManager
 		addConfigKey(code, ComponentKey.ALLOW_USING, true);
 		addConfigKey(code, ComponentKey.BAN_SLOTS_FROM, info.getBehaviourInfo().banSlotsFrom);
 		// TODO custom properties like searching radius
+		LanguageInfo langInfo = info.getLanguageInfo();
+		addLangConfigKey(code, ComponentKey.LANG_LORE_PET_NAME, langInfo.lorePetName);
+		addLangConfigKey(code, ComponentKey.LANG_TOME_NAME_FORMAT, langInfo.tomeNameFormat);
+		addLangConfigKey(code, ComponentKey.LANG_SOLO_TOME_NAME, langInfo.soloTomeName);
 	}
 
 	private void addConfigKey(String code, String property, Object val) {
-		config.set(new ComponentKey(code, property, val), val);
+		if (config.getKey(ComponentKey.getPropertyName(code, property)) == null)
+			config.set(new ComponentKey(code, property, val), val);
+	}
+
+	private void addLangConfigKey(String code, String property, Object val) {
+		if (langConfig.getKey(ComponentKey.getPropertyName(code, property)) == null)
+			langConfig.set(new ComponentKey(code, property, val), val);
 	}
 
 	public ComponentInfo getInfo(String code) {
@@ -75,6 +87,16 @@ public class ComponentManager
 		ComponentInfo componentInfo = getInfo(code);
 		if (componentInfo == null)
 			return null;
+		// awful code
+		String key_lorePetName = ComponentKey.getPropertyName(code, ComponentKey.LANG_LORE_PET_NAME);
+		String key_tomeNameFormat = ComponentKey.getPropertyName(code, ComponentKey.LANG_TOME_NAME_FORMAT);
+		String key_soloTomeName = ComponentKey.getPropertyName(code, ComponentKey.LANG_SOLO_TOME_NAME);
+		LanguageInfo newInfo = new LanguageInfo(
+				langConfig.get(langConfig.getKey(key_lorePetName)),
+				langConfig.get(langConfig.getKey(key_tomeNameFormat)),
+				langConfig.get(langConfig.getKey(key_soloTomeName)));
+		componentInfo.setLanguageInfo(newInfo);
+		
 		return componentInfo.getLanguageInfo();
 	}
 	public void updateLangInfo(String code, LanguageInfo info) {
@@ -179,6 +201,10 @@ public class ComponentManager
 		public static final String ALLOW_CRAFTING = "craft";
 		public static final String ALLOW_USING = "use";
 		public static final String BAN_SLOTS_FROM = "ban-slots-from";
+		
+		public static final String LANG_LORE_PET_NAME = "lore-entity-name";
+		public static final String LANG_TOME_NAME_FORMAT = "tome-name-format";
+		public static final String LANG_SOLO_TOME_NAME = "solo-tome-name";
 		
 		private final String name;
 		private final Object defaultValue;

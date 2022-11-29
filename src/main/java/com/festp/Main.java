@@ -44,12 +44,12 @@ public class Main extends JavaPlugin
     	NBTUtils.setPlugin(this);
 
 		LangConfig lang = new LangConfig(new File(getDataFolder(), "lang.yml"));
+		lang.load();
     	Config config = new Config(this, lang);
     	config.load();
     	config.save();
 
-    	ComponentManager componentManager = new ComponentManager(config);
-    	// TODO localization? - use only updateInfo()
+    	ComponentManager componentManager = new ComponentManager(config, lang);
     	componentManager.register(new SimpleComponentFactory(MinecartComponent.class));
     	ComponentInfo boatInfo = new ComponentInfo(
     			new SimpleComponentFactory(BoatComponent.class),
