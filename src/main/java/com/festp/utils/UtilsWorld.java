@@ -41,8 +41,9 @@ public class UtilsWorld
 		return foundBlock.getLocation().add(0.5, 0, 0.5);
 	}
 	
-	/** Try find nearest NxN area player can fly with at least one required block */
-	public static Location searchArea_NxN(Location loc, final int N, double horRadius, Predicate<Block> predicate)
+	/** Try find nearest NxN area player can fly with at least one required block<br>
+	 * if softMode is <b>true</b>, allows blocks other than predicated and air */
+	public static Location searchArea_NxN(Location loc, final int N, double horRadius, Predicate<Block> predicate, boolean softMode)
 	{
 		// fill the integer grid: 0, 1, 2
 		// check areas: product is >= 2
@@ -54,6 +55,7 @@ public class UtilsWorld
 		int width = radius * 2 + 1;
 		int vertRadius = 0;
 		int height = vertRadius * 2 + 1;
+		int minProduct = 2;
 		int[][][] grid = new int[width][height][width];
 		Block b;
 		for (int dz = -radius; dz <= radius; dz++)
@@ -67,8 +69,14 @@ public class UtilsWorld
 						continue;
 					b = startBlock.getRelative(dx, dy, dz);
 					grid[x][y][z] += UtilsType.playerCanFlyOn(b) ? 1 : 0;
-					if (grid[x][y][z] > 0)
+					if (grid[x][y][z] > 0) {
 						grid[x][y][z] += predicate.test(b) ? 1 : 0;
+						// in soft mode, entity may stay on one block of the area, ignoring other
+						// in hard mode, entity must either stay on predicated blocks or fly on predicated blocks
+						if (!softMode && grid[x][y][z] == 1)
+							if (!b.getType().isAir())
+								grid[x][y][z] = 0;
+					}
 				}
 		Location foundLoc = null;
 		
@@ -81,7 +89,7 @@ public class UtilsWorld
 		for (int dz = minZ; dz < maxZ; dz++)
 			for (int dx = minX; dx < maxX; dx++)
 				product *= grid[radius + dx][vertRadius][radius + dz];
-		if (product < 2)
+		if (product < minProduct)
 			isInitLocValid = false;
 		if (isInitLocValid)
 			return loc;
@@ -100,7 +108,7 @@ public class UtilsWorld
 							product *= grid[x + i][y][z + j];
 									
 					// has non-flyable blocks (==0) or no required blocks(==0 or ==1)
-					if (product < 2)
+					if (product < minProduct)
 						continue;
 					
 					Location l = startBlock.getLocation().add(dx - 0.5 * N, dy, dz - 0.5 * N);

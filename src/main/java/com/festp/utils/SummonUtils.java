@@ -102,19 +102,23 @@ public class SummonUtils
 		return pig;
 	}
 	
-	private static Location findNearest_2x2_3x3(Location loc, double horRadius, Predicate<Block> predicate) {
-		setGroundY(loc);
-		Location l_3x3 = UtilsWorld.searchArea_NxN(loc, 3, horRadius, predicate);
-		Location l_2x2 = UtilsWorld.searchArea_NxN(loc, 2, horRadius, predicate);
-		
-		Location res = l_3x3;
-		if (res == null) {
-			res = l_2x2;
-		} else if (l_2x2 != null) {
-			if (loc.distanceSquared(l_2x2) < loc.distanceSquared(res)) {
-				res = l_2x2;
+	private static Location getNearest(Location loc, Location l1, Location l2) {
+		if (l1 == null) {
+			return l2;
+		} else if (l2 != null) {
+			if (loc.distanceSquared(l2) < loc.distanceSquared(l1)) {
+				return l2;
 			}
 		}
+		return l1;
+	}
+	
+	private static Location findNearest_2x2_3x3(Location loc, double horRadius, Predicate<Block> predicate, boolean softMode) {
+		setGroundY(loc);
+		Location l_3x3 = UtilsWorld.searchArea_NxN(loc, 3, horRadius, predicate, softMode);
+		Location l_2x2 = UtilsWorld.searchArea_NxN(loc, 2, horRadius, predicate, softMode);
+		
+		Location res = getNearest(loc, l_3x3, l_2x2);
 		// TODO set original Y if possible (use Block#getCollisionShape())
 		if (res != null)
 			res.setY(loc.getY() + 1);
@@ -122,8 +126,10 @@ public class SummonUtils
 	}
 	
 	public static Location tryFindForBoat(Location loc, double horRadius) {
-		// TODO watered bottom blocks: boats go down to 8/16--9/16, but can move on chests
-		return findNearest_2x2_3x3(loc, horRadius, PREDICATE_BOAT);
+		// TODO watered bottom blocks: boats go down to 8/16--9/16, but can move even on chests
+		Location l1 = findNearest_2x2_3x3(loc.clone(), horRadius, PREDICATE_BOAT, false);
+		Location l2 = findNearest_2x2_3x3(loc.add(0, +1, 0), horRadius, PREDICATE_BOAT, false);
+		return getNearest(loc, l1, l2);
 	}
 	public static Boat summonBoat(Location l, Player p, BoatData boatData) {
 		l.setDirection(p.getLocation().getDirection());
@@ -135,7 +141,7 @@ public class SummonUtils
 	}
 
 	public static Location tryFindForHorse(Location loc, double horRadius) {
-		return findNearest_2x2_3x3(loc, horRadius, PREDICATE_HORSE);
+		return findNearest_2x2_3x3(loc, horRadius, PREDICATE_HORSE, true);
 	}
 	public static Horse summonHorse(Location l, Player p) {
 		l.setDirection(p.getLocation().getDirection());
