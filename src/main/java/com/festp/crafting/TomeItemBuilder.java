@@ -85,8 +85,7 @@ public class TomeItemBuilder
 				decorateName = false;
 			} else {
 				String loreName = componentManager.getLangInfo(codes.get(0)).lorePetName;
-				String entityName = String.format(NAME_ONE_TYPE_TEMPLATE, capitalize(loreName.toLowerCase()));
-				entityName = capitalize(entityName);
+				String entityName = capitalize(loreName.toLowerCase());
 				name = String.format(NAME_ONE_TYPE_TEMPLATE, entityName);
 			}
 		} else if (isAnyAllTome) {
