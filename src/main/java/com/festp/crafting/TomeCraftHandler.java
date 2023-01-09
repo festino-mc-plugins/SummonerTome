@@ -201,16 +201,21 @@ public class TomeCraftHandler implements Listener, IConfigListener
 					bookCount++;
 					oldItem = matrix[i];
 					oldTome = SummonerTome.getTome(matrix[i]);
-					boolean hasHorse = oldTome.hasComponent(HorseComponent.class);
-					boolean hasCustomHorse = oldTome.hasComponent(CustomHorseComponent.class);
-					if (!hasHorse || hasCustomHorse) {
-						correct = false;
-						break;
-					}
+				}
+			}
+
+			if (oldTome == null) {
+				correct = false;
+			}
+			else {
+				boolean hasHorse = oldTome.hasComponent(HorseComponent.class);
+				boolean hasCustomHorse = oldTome.hasComponent(CustomHorseComponent.class);
+				if (!hasHorse || hasCustomHorse) {
+					correct = false;
 				}
 			}
 			
-			if (correct && oldTome != null) {
+			if (correct) {
 				// TODO identify original tomes, fire inner event
 				CustomHorseComponent horseComp = new CustomHorseComponent();
 				oldTome.replace(HorseComponent.class, horseComp);
