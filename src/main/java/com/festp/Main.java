@@ -88,6 +88,7 @@ public class Main extends JavaPlugin
 		Bukkit.getScheduler().scheduleSyncRepeatingTask(this,
 			new Runnable() {
 				public void run() {
+					// remove entity on join
 					TaskList.tick();
 					
 					// save boat and horse data to tomes
