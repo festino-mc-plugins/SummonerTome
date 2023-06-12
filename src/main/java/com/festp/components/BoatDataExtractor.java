@@ -11,7 +11,7 @@ public class BoatDataExtractor implements IDataExtractor
 	public ITomeComponent extract(ItemStack oldTome, Entity entity) {
 		if (!(entity instanceof Boat))
 			return null;
-		BoatData boatData = BoatData.fromBoat((Boat)entity);
+		BoatData boatData = BoatData.fromBoat((Boat)entity); // cannot be null since the boat was summoned
 	    BoatComponent comp = new BoatComponent();
 	    comp.setBoatData(boatData);
 	    return comp;

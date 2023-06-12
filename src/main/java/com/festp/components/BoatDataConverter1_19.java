@@ -1,5 +1,9 @@
 package com.festp.components;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Tag;
@@ -8,13 +12,50 @@ import org.bukkit.entity.ChestBoat;
 
 import com.festp.handlers.TomeEntityHandler;
 import com.festp.utils.Utils;
+import com.festp.utils.UtilsVersion;
 
 public class BoatDataConverter1_19 implements IBoatDataConverter
 {
+	private static class BoatMaterial {
+		Material boatMaterial;
+		Material chestBoatMaterial;
+		Boat.Type type;
+		
+		public BoatMaterial(Material boat, Material chestBoat, Boat.Type type) {
+			this.boatMaterial = boat;
+			this.chestBoatMaterial = chestBoat;
+			this.type = type;
+		}
+	}
+	
+	private static BoatMaterial[] initBoatMaterials() {
+		List<BoatMaterial> res = new ArrayList<>(Arrays.asList(
+				new BoatMaterial(Material.ACACIA_BOAT, Material.ACACIA_CHEST_BOAT, Boat.Type.ACACIA),
+				new BoatMaterial(Material.BIRCH_BOAT, Material.BIRCH_CHEST_BOAT, Boat.Type.BIRCH),
+				new BoatMaterial(Material.DARK_OAK_BOAT, Material.DARK_OAK_CHEST_BOAT, Boat.Type.DARK_OAK),
+				new BoatMaterial(Material.JUNGLE_BOAT, Material.JUNGLE_CHEST_BOAT, Boat.Type.JUNGLE),
+				new BoatMaterial(Material.OAK_BOAT, Material.OAK_CHEST_BOAT, Boat.Type.OAK),
+				new BoatMaterial(Material.SPRUCE_BOAT, Material.SPRUCE_CHEST_BOAT, Boat.Type.SPRUCE),
+				new BoatMaterial(Material.MANGROVE_BOAT, Material.MANGROVE_CHEST_BOAT, Boat.Type.MANGROVE)
+			));
+		if (UtilsVersion.SUPPORTS_CHERRY_BOAT)
+			res.add(new BoatMaterial(Material.CHERRY_BOAT, Material.CHERRY_CHEST_BOAT, Boat.Type.CHERRY));
+		if (UtilsVersion.SUPPORTS_BAMBOO_RAFT)
+			res.add(new BoatMaterial(Material.BAMBOO_RAFT, Material.BAMBOO_CHEST_RAFT, Boat.Type.BAMBOO));
+		
+		return res.toArray(new BoatMaterial[0]);
+	}
+	
+	private static final BoatMaterial[] BOAT_MATERIALS = initBoatMaterials();
+
 	public BoatData fromBoat(Boat boat)
 	{
+		Material boatMaterial = woodToMaterial(boat.getBoatType());
+		if (boatMaterial == null)
+			return null;
+		
 		BoatData res = new BoatData();
-		res.boatMaterial = woodToMaterial(boat.getBoatType());
+		res.boatMaterial = boatMaterial;
 		res.hasChest = boat instanceof ChestBoat;
 		if (res.hasChest) {
 			res.inventory = ((ChestBoat)boat).getInventory().getContents();
@@ -47,41 +88,29 @@ public class BoatDataConverter1_19 implements IBoatDataConverter
 	}
 
 	public Material[] getSupportedBoats() {
-		return new Material[] {
-				Material.ACACIA_BOAT, Material.BIRCH_BOAT, Material.DARK_OAK_BOAT,
-				Material.JUNGLE_BOAT, Material.OAK_BOAT, Material.SPRUCE_BOAT,
-				Material.MANGROVE_BOAT,
-				Material.ACACIA_CHEST_BOAT, Material.BIRCH_CHEST_BOAT, Material.DARK_OAK_CHEST_BOAT,
-				Material.JUNGLE_CHEST_BOAT, Material.OAK_CHEST_BOAT, Material.SPRUCE_CHEST_BOAT,
-				Material.MANGROVE_CHEST_BOAT};
+		List<Material> res = new ArrayList<>();
+		for (BoatMaterial bm : BOAT_MATERIALS) {
+			res.add(bm.boatMaterial);
+			res.add(bm.chestBoatMaterial);
+		}
+		
+		return res.toArray(new Material[0]);
 	}
 	
 	private static Boat.Type materialToWood(Material m) {
-    	switch(m)
-    	{
-    	case ACACIA_BOAT: return Boat.Type.ACACIA;
-    	case BIRCH_BOAT: return Boat.Type.BIRCH;
-    	case DARK_OAK_BOAT: return Boat.Type.DARK_OAK;
-    	case JUNGLE_BOAT: return Boat.Type.JUNGLE;
-    	case OAK_BOAT: return Boat.Type.OAK;
-    	case SPRUCE_BOAT: return Boat.Type.SPRUCE;
-    	case MANGROVE_BOAT: return Boat.Type.MANGROVE;
-		default: return null;
+		for (BoatMaterial bm : BOAT_MATERIALS) {
+			if (m == bm.boatMaterial)
+				return bm.type;
 		}
+    	return null;
 	}
 	
 	private static Material woodToMaterial(Boat.Type type) {
-    	switch(type)
-    	{
-    	case ACACIA: return Material.ACACIA_BOAT;
-    	case BIRCH: return Material.BIRCH_BOAT;
-    	case DARK_OAK: return Material.DARK_OAK_BOAT;
-    	case JUNGLE: return Material.JUNGLE_BOAT;
-    	case OAK: return Material.OAK_BOAT;
-    	case SPRUCE: return Material.SPRUCE_BOAT;
-    	case MANGROVE: return Material.MANGROVE_BOAT;
-		default: return null;
+		for (BoatMaterial bm : BOAT_MATERIALS) {
+			if (type == bm.type)
+				return bm.boatMaterial;
 		}
+		return null;
 	}
 
 	private static boolean getIsChested(Material m) {
@@ -89,20 +118,10 @@ public class BoatDataConverter1_19 implements IBoatDataConverter
 	}
 	
 	private static Material getChestless(Material m) {
-		if (m == Material.ACACIA_CHEST_BOAT)
-			return Material.ACACIA_BOAT;
-		if (m == Material.BIRCH_CHEST_BOAT)
-			return Material.BIRCH_BOAT;
-		if (m == Material.DARK_OAK_CHEST_BOAT)
-			return Material.DARK_OAK_BOAT;
-		if (m == Material.JUNGLE_CHEST_BOAT)
-			return Material.JUNGLE_BOAT;
-		if (m == Material.OAK_CHEST_BOAT)
-			return Material.OAK_BOAT;
-		if (m == Material.SPRUCE_CHEST_BOAT)
-			return Material.SPRUCE_BOAT;
-		if (m == Material.MANGROVE_CHEST_BOAT)
-			return Material.MANGROVE_BOAT;
+		for (BoatMaterial bm : BOAT_MATERIALS) {
+			if (m == bm.chestBoatMaterial)
+				return bm.boatMaterial;
+		}
 		return m;
 	}
 }

@@ -36,6 +36,9 @@ public class BoatComponent implements ITomeComponent
 		Boat boat = (Boat)entity;
 		
 		BoatData newData = BoatData.fromBoat(boat);
+		if (boatData == null || newData == null)
+			return false;
+		
 		boatData.applyToBoat(boat);
 		boatData = newData;
 		

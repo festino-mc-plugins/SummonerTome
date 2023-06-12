@@ -10,10 +10,11 @@ import com.festp.utils.UtilsVersion;
 
 public class BoatData
 {
+	private static final char UNDEFINED_MATERIAL = '?';
 	private static final IBoatDataConverter CONVERTER = getConverter();
 	
 	private static IBoatDataConverter getConverter() {
-		if (UtilsVersion.SUPPORTS_CHEST_AND_MANGROVE)
+		if (UtilsVersion.SUPPORTS_CHEST_BOAT)
 			return new BoatDataConverter1_19();
 		else
 			return new BoatDataConverter1_18();
@@ -29,8 +30,12 @@ public class BoatData
 
 	@Override
 	public String toString() {
+		char materialChar = materialToChar(boatMaterial);
+		if (materialChar == UNDEFINED_MATERIAL)
+			throw new IllegalStateException("corrupted boat material");
+
 		StringBuilder res = new StringBuilder();
-		res.append(materialToChar(boatMaterial));
+		res.append(materialChar);
 		res.append(hasChest ? '1' : '0');
 		if (hasChest)
 			res.append(InventorySerializer.saveInventory(inventory));
@@ -82,11 +87,19 @@ public class BoatData
 			return 'o';
 		if (material == Material.SPRUCE_BOAT)
 			return 's';
-		if (UtilsVersion.SUPPORTS_CHEST_AND_MANGROVE) {
+		if (UtilsVersion.SUPPORTS_MANGROVE_BOAT) {
 			if (material == Material.MANGROVE_BOAT)
 				return 'm';
 		}
-		return '?';
+		if (UtilsVersion.SUPPORTS_CHERRY_BOAT) {
+			if (material == Material.CHERRY_BOAT)
+				return 'c';
+		}
+		if (UtilsVersion.SUPPORTS_BAMBOO_RAFT) {
+			if (material == Material.BAMBOO_RAFT)
+				return 'r';
+		}
+		return UNDEFINED_MATERIAL;
 	}
 	
 	private static Material charToMaterial(char c) {
@@ -102,9 +115,17 @@ public class BoatData
 			return Material.OAK_BOAT;
 		if (c == 's')
 			return Material.SPRUCE_BOAT;
-		if (UtilsVersion.SUPPORTS_CHEST_AND_MANGROVE) {
+		if (UtilsVersion.SUPPORTS_MANGROVE_BOAT) {
 			if (c == 'm')
 				return Material.MANGROVE_BOAT;
+		}
+		if (UtilsVersion.SUPPORTS_CHERRY_BOAT) {
+			if (c == 'c')
+				return Material.CHERRY_BOAT;
+		}
+		if (UtilsVersion.SUPPORTS_BAMBOO_RAFT) {
+			if (c == 'r')
+				return Material.BAMBOO_RAFT;
 		}
 		return null;
 	}
