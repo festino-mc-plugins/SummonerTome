@@ -7,6 +7,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.Waterlogged;
 import org.bukkit.entity.AbstractHorse;
 import org.bukkit.entity.Boat;
 import org.bukkit.entity.Entity;
@@ -25,7 +27,8 @@ public class SummonUtils
 	private static final String TAG_CODE = "tomecode";
 	
 	private static final Material[] BOAT_BLOCKS =
-			{ Material.WATER, Material.ICE, Material.PACKED_ICE, Material.BLUE_ICE, Material.FROSTED_ICE, Material.SEA_PICKLE, Material.SEAGRASS, Material.TALL_SEAGRASS };
+			{ Material.WATER, Material.ICE, Material.PACKED_ICE, Material.BLUE_ICE, Material.FROSTED_ICE,
+				Material.BUBBLE_COLUMN, Material.KELP, Material.KELP_PLANT, Material.SEAGRASS, Material.TALL_SEAGRASS };
 	private static final Material[] MINECART_BLOCKS =
 			{ Material.RAIL, Material.ACTIVATOR_RAIL, Material.DETECTOR_RAIL, Material.POWERED_RAIL };
 	private static final Material[] STRIDER_BLOCKS =
@@ -52,7 +55,10 @@ public class SummonUtils
 	private static final Predicate<Block> PREDICATE_BOAT = new Predicate<Block>() {
 		@Override
 		public boolean test(Block b) {
-			return Utils.contains(BOAT_BLOCKS, b.getType());
+			if (Utils.contains(BOAT_BLOCKS, b.getType()))
+				return true;
+			BlockData data = b.getBlockData();
+			return data instanceof Waterlogged && ((Waterlogged)data).isWaterlogged();
 		}
 	};
 	private static final Predicate<Block> PREDICATE_HORSE = new Predicate<Block>() {
