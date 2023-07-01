@@ -5,6 +5,7 @@ import java.util.function.Predicate;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.util.BoundingBox;
 
 public class UtilsWorld
 {
@@ -42,7 +43,7 @@ public class UtilsWorld
 	}
 	
 	/** Try find nearest NxN area player can fly with at least one required block<br>
-	 * if softMode is <b>true</b>, allows blocks other than predicated and air */
+	 * if softMode is <b>true</b>, allows blocks other than predicated and air (1/16+) */
 	public static Location searchArea_NxN(Location loc, final int N, double horRadius, Predicate<Block> predicate, boolean softMode)
 	{
 		// fill the integer grid: 0, 1, 2
@@ -58,6 +59,7 @@ public class UtilsWorld
 		int minProduct = 2;
 		int[][][] grid = new int[width][height][width];
 		Block b;
+		BoundingBox softBB = new BoundingBox(-1, 15.1 / 16, -1, 2, 2, 2);
 		for (int dz = -radius; dz <= radius; dz++)
 			for (int dy = -vertRadius; dy <= vertRadius; dy++)
 				for (int dx = -radius; dx <= radius; dx++)
@@ -74,7 +76,7 @@ public class UtilsWorld
 						// in soft mode, entity may stay on one block of the area, ignoring other
 						// in hard mode, entity must either stay on predicated blocks or fly on predicated blocks
 						if (!softMode && grid[x][y][z] == 1)
-							if (!b.getType().isAir())
+							if (!b.getType().isAir() && b.getCollisionShape().overlaps(softBB))
 								grid[x][y][z] = 0;
 					}
 				}

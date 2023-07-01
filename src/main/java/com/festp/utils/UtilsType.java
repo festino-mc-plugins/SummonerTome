@@ -38,8 +38,9 @@ public class UtilsType
 				new Vector(1, 1, 1), new Vector(-1, 1, 1),
 				new Vector(1, -1, 1), new Vector(-1, -1, 1),
 				new Vector(1, 0, 0), new Vector(0, 1, 0), new Vector(0, 0, 1)};
-		double sqrt3 = Math.sqrt(3);
-		double[] dists = new double[] { sqrt3, sqrt3, sqrt3, sqrt3, 1, 1, 1 };
+		double sqrt3 = Math.sqrt(3) - 2 * eps;
+		double one = 1 - 2 * eps;
+		double[] dists = new double[] { sqrt3, sqrt3, sqrt3, sqrt3, one, one, one };
 		for (int i = 0; i < localStarts.length; i++)
 		{
 			Location start = b.getLocation().add(localStarts[i]);
