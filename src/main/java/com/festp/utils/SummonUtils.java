@@ -132,7 +132,6 @@ public class SummonUtils
 	}
 	
 	public static Location tryFindForBoat(Location loc, double horRadius) {
-		// TODO watered bottom blocks: boats go down to 8/16--9/16, but can move even on chests
 		Location l1 = findNearest_2x2_3x3(loc.clone(), horRadius, PREDICATE_BOAT, false);
 		Location l2 = findNearest_2x2_3x3(loc.add(0, +1, 0), horRadius, PREDICATE_BOAT, false);
 		return getNearest(loc, l1, l2);
