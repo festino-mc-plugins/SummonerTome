@@ -25,6 +25,7 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 
 public class HorseData {
+	double health;
 	double maxHealth;
 	double speed;
 	double jumpStrength;
@@ -46,6 +47,7 @@ public class HorseData {
 	{
 		JsonObject json = new JsonObject();
 		json.addProperty("type", Utils.getShortBukkitClass(type));
+		json.addProperty("health", health);
 		json.addProperty("max_health", maxHealth);
 		json.addProperty("movement_speed", speed);
 		json.addProperty("jump_strength", jumpStrength);
@@ -72,31 +74,24 @@ public class HorseData {
 			Object parsed = JsonParser.parseString(s);
 			json = (JsonObject) parsed;
 		} catch (JsonParseException e) {
-			System.out.print("[] SummonerTome JSON parse error: " + s);
+			System.out.println("[] SummonerTome JSON parse error: " + s);
 			e.printStackTrace();
 			return null;
 		}
 		
-		HorseData res = new HorseData();
-		Class<?> resClass = Utils.getBukkitClass(json.get("type").getAsString());
-		if (resClass == null) {
-			System.out.print("[] SummonerTome horse class parse error: " + s);
+		Class<?> resClassGeneral = Utils.getBukkitClass(json.get("type").getAsString());
+		if (resClassGeneral == null || !(AbstractHorse.class.isAssignableFrom(resClassGeneral))) {
+			System.out.println("[] SummonerTome horse class parse error: " + s);
 			return null;
 		}
-		res.type = (Class<? extends AbstractHorse>) resClass;
-		res.maxHealth = json.get("max_health").getAsDouble();
-		res.speed = json.get("movement_speed").getAsDouble();
-		res.jumpStrength = json.get("jump_strength").getAsDouble();
-		res.isAdult = json.get("is_adult").getAsBoolean();
+		Class<? extends AbstractHorse> resClass = (Class<? extends AbstractHorse>) resClassGeneral;
+		HorseData res = HorseData.generate(resClass);
+		res.health = getAsDoubleOrDefault(json, "health", res.maxHealth);
+		res.maxHealth = getAsDoubleOrDefault(json, "max_health", res.maxHealth);
+		res.speed = getAsDoubleOrDefault(json, "movement_speed", res.speed);
+		res.jumpStrength = getAsDoubleOrDefault(json, "jump_strength", res.jumpStrength);
+		res.isAdult = getAsBooleanOrDefault(json, "is_adult", res.isAdult);
 		
-		/*List<Map<String, Object>> inv = (List<Map<String, Object>>) json.get("inventory");
-		res.inventory = new ItemStack[inv.size()];
-		int i = 0;
-		for (Map<String, Object> item : inv) {
-			if (item != null)
-				res.inventory[i] = ItemStack.deserialize(item);
-			i++;
-		}*/
 		String inv = json.get("inventory").getAsString();
 		res.inventory = InventorySerializer.loadInventory(inv);
 
@@ -104,10 +99,22 @@ public class HorseData {
 			res.horseColor = Color.valueOf(json.get("color").getAsString());
 			res.horseStyle = Style.valueOf(json.get("style").getAsString());
 		} else if (ChestedHorse.class.isAssignableFrom(res.type)) {
-			res.chestedIsCarrying = json.get("is_chested").getAsBoolean();
+			res.chestedIsCarrying = getAsBooleanOrDefault(json, "is_chested", res.chestedIsCarrying);
 		}
 
 		return res;
+	}
+	
+	// TODO JsonObject wrapper
+	private static double getAsDoubleOrDefault(JsonObject json, String memberName, double defaultValue) {
+		if (json.has(memberName))
+			return json.get(memberName).getAsDouble();
+		return defaultValue;
+	}
+	private static boolean getAsBooleanOrDefault(JsonObject json, String memberName, boolean defaultValue) {
+		if (json.has(memberName))
+			return json.get(memberName).getAsBoolean();
+		return defaultValue;
 	}
 	
 	public Class<? extends AbstractHorse> getHorseClass() {
@@ -121,7 +128,7 @@ public class HorseData {
 			public void set(AbstractHorse newHorse) {
 				newHorse.setTamed(true);
 				newHorse.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(maxHealth);
-				newHorse.setHealth(maxHealth);
+				newHorse.setHealth(health);
 				newHorse.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(speed);
 				newHorse.setJumpStrength(jumpStrength);
 				if (isAdult) 	newHorse.setAdult();
@@ -159,6 +166,7 @@ public class HorseData {
 		HorseData res = new HorseData();
 		res.type = horse.getClass();
 		res.maxHealth = horse.getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue();
+		res.health = horse.getHealth();
 		res.speed = horse.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).getBaseValue();
 		res.jumpStrength = horse.getAttribute(Attribute.HORSE_JUMP_STRENGTH).getBaseValue();
 		res.isAdult = horse.isAdult();
@@ -187,6 +195,7 @@ public class HorseData {
 			res = new HorseData();
 			res.type = type;
 			res.maxHealth = UtilsRandom.getInt(15, 30);
+			res.health = res.maxHealth;
 			res.speed = UtilsRandom.getDouble(0.1125, 0.3375);
 			res.jumpStrength = UtilsRandom.getDouble(0.4, 1.0);
 			res.inventory = new ItemStack[1];
