@@ -86,8 +86,8 @@ public class HorseData {
 		}
 		Class<? extends AbstractHorse> resClass = (Class<? extends AbstractHorse>) resClassGeneral;
 		HorseData res = HorseData.generate(resClass);
-		res.health = getAsDoubleOrDefault(json, "health", res.maxHealth);
 		res.maxHealth = getAsDoubleOrDefault(json, "max_health", res.maxHealth);
+		res.health = getAsDoubleOrDefault(json, "health", res.maxHealth);
 		res.speed = getAsDoubleOrDefault(json, "movement_speed", res.speed);
 		res.jumpStrength = getAsDoubleOrDefault(json, "jump_strength", res.jumpStrength);
 		res.isAdult = getAsBooleanOrDefault(json, "is_adult", res.isAdult);
