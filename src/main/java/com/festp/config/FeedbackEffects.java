@@ -7,6 +7,8 @@ import org.bukkit.SoundCategory;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
+import com.festp.utils.Utils;
+
 public class FeedbackEffects
 {
 	private static final float VOLUME = 0.15f;
@@ -25,7 +27,7 @@ public class FeedbackEffects
 	public void playSummonSuccess(Location entityLoc) {
 		World world = entityLoc.getWorld();
 		Location effectLocation = entityLoc.add(0, 0.15, 0);
-		spawnParticle(world, Particle.ENCHANTMENT_TABLE, effectLocation, 30, 0.1, 0.1, 0.1, 0.8);
+		spawnParticle(world, Utils.getEnchantParticle(), effectLocation, 30, 0.1, 0.1, 0.1, 0.8);
 		playSound(world, effectLocation, Sound.BLOCK_ENCHANTMENT_TABLE_USE, SoundCategory.PLAYERS, VOLUME, 0.8f);
 	}
 	public void playSummonFail(Player player) {

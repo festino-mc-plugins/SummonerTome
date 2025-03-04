@@ -4,9 +4,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.AbstractHorse;
 import org.bukkit.entity.ChestedHorse;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Horse;
 import org.bukkit.entity.Horse.Color;
 import org.bukkit.entity.Horse.Style;
@@ -29,7 +29,7 @@ public class HorseData {
 	double maxHealth;
 	double speed;
 	double jumpStrength;
-	Class<? extends AbstractHorse> type;
+	EntityType type;
 	ItemStack[] inventory;
 	boolean isAdult;
 	
@@ -46,17 +46,17 @@ public class HorseData {
 	public String toString()
 	{
 		JsonObject json = new JsonObject();
-		json.addProperty("type", Utils.getShortBukkitClass(type));
+		json.addProperty("type", type.toString());
 		json.addProperty("health", health);
 		json.addProperty("max_health", maxHealth);
 		json.addProperty("movement_speed", speed);
 		json.addProperty("jump_strength", jumpStrength);
 		json.addProperty("is_adult", isAdult);
 		json.addProperty("inventory", InventorySerializer.saveInventory(inventory));
-		if (Horse.class.isAssignableFrom(type)) {
+		if (Horse.class.isAssignableFrom(getHorseClass())) {
 			json.addProperty("color", horseColor.name());
 			json.addProperty("style", horseStyle.name());
-		} else if (ChestedHorse.class.isAssignableFrom(type)) {
+		} else if (ChestedHorse.class.isAssignableFrom(getHorseClass())) {
 			json.addProperty("is_chested", chestedIsCarrying);
 		}
 		return json.toString();
@@ -79,13 +79,14 @@ public class HorseData {
 			return null;
 		}
 		
-		Class<?> resClassGeneral = Utils.getBukkitClass(json.get("type").getAsString());
-		if (resClassGeneral == null || !(AbstractHorse.class.isAssignableFrom(resClassGeneral))) {
+		EntityType type = EntityType.valueOf(json.get("type").getAsString());
+		if (type == null) {
 			System.out.println("[] SummonerTome horse class parse error: " + s);
 			return null;
 		}
-		Class<? extends AbstractHorse> resClass = (Class<? extends AbstractHorse>) resClassGeneral;
-		HorseData res = HorseData.generate(resClass);
+		Class<? extends AbstractHorse> resClass = (Class<? extends AbstractHorse>) type.getEntityClass();
+		// TODO avoid generating data in deserialization (just... why? - the idea is backward compatibility)
+		HorseData res = HorseData.generate(type);
 		res.maxHealth = getAsDoubleOrDefault(json, "max_health", res.maxHealth);
 		res.health = getAsDoubleOrDefault(json, "health", res.maxHealth);
 		res.speed = getAsDoubleOrDefault(json, "movement_speed", res.speed);
@@ -95,10 +96,10 @@ public class HorseData {
 		String inv = json.get("inventory").getAsString();
 		res.inventory = InventorySerializer.loadInventory(inv);
 
-		if (Horse.class.isAssignableFrom(res.type)) {
+		if (Horse.class.isAssignableFrom(resClass)) {
 			res.horseColor = Color.valueOf(json.get("color").getAsString());
 			res.horseStyle = Style.valueOf(json.get("style").getAsString());
-		} else if (ChestedHorse.class.isAssignableFrom(res.type)) {
+		} else if (ChestedHorse.class.isAssignableFrom(resClass)) {
 			res.chestedIsCarrying = getAsBooleanOrDefault(json, "is_chested", res.chestedIsCarrying);
 		}
 
@@ -117,8 +118,9 @@ public class HorseData {
 		return defaultValue;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public Class<? extends AbstractHorse> getHorseClass() {
-		return type;
+		return (Class<? extends AbstractHorse>) type.getEntityClass();
 	}
 
 	public void applyToHorse(AbstractHorse horse)
@@ -127,9 +129,9 @@ public class HorseData {
 			@Override
 			public void set(AbstractHorse newHorse) {
 				newHorse.setTamed(true);
-				newHorse.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(maxHealth);
+				newHorse.getAttribute(Utils.getMaxHealthAttribute()).setBaseValue(maxHealth);
 				newHorse.setHealth(health);
-				newHorse.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(speed);
+				newHorse.getAttribute(Utils.getMovementSpeedAttribute()).setBaseValue(speed);
 				newHorse.setJumpStrength(jumpStrength);
 				if (isAdult) 	newHorse.setAdult();
 				else 			newHorse.setBaby();
@@ -151,9 +153,9 @@ public class HorseData {
 				}
 			}
 		};
-		if (!type.isAssignableFrom(horse.getClass())) {
+		if (!getHorseClass().isAssignableFrom(horse.getClass())) {
 			Location loc = horse.getLocation();
-			AbstractHorse newHorse = SummonUtils.summonCustomHorse(loc, type, setter);
+			AbstractHorse newHorse = SummonUtils.summonCustomHorse(loc, getHorseClass(), setter);
 			TomeEntityHandler.replaceEntity(horse, newHorse);
 			horse = newHorse;
 		} else {
@@ -164,11 +166,11 @@ public class HorseData {
 	public static HorseData fromHorse(AbstractHorse horse)
 	{
 		HorseData res = new HorseData();
-		res.type = horse.getClass();
-		res.maxHealth = horse.getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue();
+		res.type = horse.getType();
+		res.maxHealth = horse.getAttribute(Utils.getMaxHealthAttribute()).getBaseValue();
 		res.health = horse.getHealth();
-		res.speed = horse.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).getBaseValue();
-		res.jumpStrength = horse.getAttribute(Attribute.HORSE_JUMP_STRENGTH).getBaseValue();
+		res.speed = horse.getAttribute(Utils.getMovementSpeedAttribute()).getBaseValue();
+		res.jumpStrength = horse.getJumpStrength();
 		res.isAdult = horse.isAdult();
 		res.inventory = horse.getInventory().getContents();
 
@@ -185,9 +187,9 @@ public class HorseData {
 	}
 
 	public static HorseData generate() {
-		return generate(Horse.class);
+		return generate(EntityType.HORSE);
 	}
-	public static HorseData generate(Class<? extends AbstractHorse> type)
+	public static HorseData generate(EntityType type)
 	{
 		HorseData res = generateBySpawn(type);
 		if (res == null)
@@ -201,19 +203,19 @@ public class HorseData {
 			res.inventory = new ItemStack[1];
 			res.isAdult = true;
 			
-			if (type.isAssignableFrom(Horse.class)) {
+			if (type.getEntityClass().isAssignableFrom(Horse.class)) {
 				res.horseColor = UtilsRandom.get(Horse.Color.values());
 				res.horseStyle = UtilsRandom.get(Horse.Style.values());
 			}
 			
-			if (type.isAssignableFrom(ChestedHorse.class)) {
+			if (type.getEntityClass().isAssignableFrom(ChestedHorse.class)) {
 				res.chestedIsCarrying = false;
 			}
 		}
 		res.inventory[0] = new ItemStack(Material.SADDLE);
 		return res;
 	}
-	private static HorseData generateBySpawn(Class<? extends AbstractHorse> type)
+	private static HorseData generateBySpawn(EntityType type)
 	{
 		Location tempLocation = null;
 		World world = Bukkit.getWorlds().get(0);
@@ -232,8 +234,9 @@ public class HorseData {
 		if (tempLocation == null)
 			return null;
 		tempLocation = tempLocation.add(0, 512, 0);
-		
-		AbstractHorse horse = world.spawn(tempLocation, type);
+
+		@SuppressWarnings("unchecked")
+		AbstractHorse horse = world.spawn(tempLocation, (Class<? extends AbstractHorse>)type.getEntityClass());
 		if (horse == null)
 			return null;
 		HorseData res = HorseData.fromHorse(horse);

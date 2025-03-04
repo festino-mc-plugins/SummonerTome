@@ -17,6 +17,7 @@ public class CustomHorseComponent implements ITomeComponent
 	private HorseData horseData;
 	
 	public CustomHorseComponent() {
+		// TODO avoid generating data in constructor (it is the only way to serialize it now)
 		horseData = HorseData.generate();
 	}
 	
@@ -35,7 +36,7 @@ public class CustomHorseComponent implements ITomeComponent
 	}
 	
 	public void deserialize(String data) {
-		if (data == SERIALIZATION_NO_HORSE_DATA)
+		if (data.equals(SERIALIZATION_NO_HORSE_DATA))
 			horseData = null;
 		else
 			horseData = HorseData.fromString(data);

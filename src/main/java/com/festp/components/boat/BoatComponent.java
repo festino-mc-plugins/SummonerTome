@@ -7,11 +7,23 @@ import org.bukkit.entity.Player;
 
 import com.festp.components.ITomeComponent;
 import com.festp.utils.SummonUtils;
+import com.festp.utils.UtilsVersion;
 
 public class BoatComponent implements ITomeComponent
 {
 	private static final double BOAT_SEARCHING_RADIUS = 2.5;
 	public static final String CODE = "boat";
+	
+	public static final IBoatDataConverter CONVERTER = getConverter();
+	
+	private static IBoatDataConverter getConverter() {
+		if (UtilsVersion.SUPPORTS_PALE_OAK_BOAT)
+			return new BoatDataConverter1_21_2();
+		else if (UtilsVersion.SUPPORTS_CHEST_BOAT)
+			return new BoatDataConverter1_19();
+		else
+			return new BoatDataConverter1_18();
+	}
 
 	BoatData boatData = new BoatData();
 	
@@ -37,11 +49,11 @@ public class BoatComponent implements ITomeComponent
 			return false;
 		Boat boat = (Boat)entity;
 		
-		BoatData newData = BoatData.fromBoat(boat);
+		BoatData newData = CONVERTER.fromBoat(boat);
 		if (boatData == null || newData == null)
 			return false;
 		
-		boatData.applyToBoat(boat);
+		CONVERTER.applyToBoat(boatData, boat);
 		boatData = newData;
 		
 		return true;

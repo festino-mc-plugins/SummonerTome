@@ -22,7 +22,6 @@ import com.festp.Main;
 import com.festp.Permissions;
 import com.festp.components.ITomeComponent;
 import com.festp.components.boat.BoatComponent;
-import com.festp.components.boat.BoatData;
 import com.festp.components.horse.CustomHorseComponent;
 import com.festp.components.horse.HorseComponent;
 import com.festp.components.minecart.MinecartComponent;
@@ -76,7 +75,7 @@ public class TomeCraftHandler implements Listener, IConfigListener
 		
     	ItemStack boatBook = TomeItemBuilder.getNewTome(componentManager.fromCode(BoatComponent.CODE));
     	ShapelessRecipe boatRecipe = new ShapelessRecipe(key_boat, boatBook);
-    	RecipeChoice.MaterialChoice boatChoice = new RecipeChoice.MaterialChoice(BoatData.getSupportedBoats());
+    	RecipeChoice.MaterialChoice boatChoice = new RecipeChoice.MaterialChoice(BoatComponent.CONVERTER.getSupportedBoats());
     	boatRecipe.addIngredient(boatChoice);
     	boatRecipe.addIngredient(boatChoice);
     	boatRecipe.addIngredient(boatChoice);
@@ -335,13 +334,13 @@ public class TomeCraftHandler implements Listener, IConfigListener
 				if (item == null)
 					continue;
 				
-				if (Utils.contains(BoatData.getSupportedBoats(), item.getType())) {
+				if (Utils.contains(BoatComponent.CONVERTER.getSupportedBoats(), item.getType())) {
 					count++;
 					if (UtilsRandom.getDouble() < 1.0 / count)
 						boatMaterial = item.getType();
 				}
 			}
-			boatComp.setBoatData(BoatData.fromBoatMaterial(boatMaterial));
+			boatComp.setBoatData(BoatComponent.CONVERTER.fromBoatMaterial(boatMaterial));
 			curResult = tome.setTome(curResult);
 	    	event.getInventory().setResult(curResult);
 		}

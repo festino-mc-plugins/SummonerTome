@@ -18,6 +18,10 @@ public class BoatDataConverter1_18 implements IBoatDataConverter
 	public void applyToBoat(BoatData data, Boat boat) {
 		boat.setWoodType(materialToWood(data.boatMaterial));
 	}
+	
+	public Class<? extends Boat> getBoatClass(BoatData data) {
+		return Boat.class;
+	}
 
 	public BoatData fromBoatMaterial(Material m) {
 		BoatData res = new BoatData();

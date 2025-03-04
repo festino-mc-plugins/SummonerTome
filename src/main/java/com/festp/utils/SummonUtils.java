@@ -19,6 +19,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Strider;
 import org.bukkit.inventory.ItemStack;
 
+import com.festp.components.boat.BoatComponent;
 import com.festp.components.boat.BoatData;
 import com.festp.components.horse.HorseData;
 
@@ -139,8 +140,8 @@ public class SummonUtils
 	}
 	public static Boat summonBoat(Location l, Player p, BoatData boatData) {
 		l.setDirection(p.getLocation().getDirection());
-		Boat boat = l.getWorld().spawn(l, boatData.getBoatClass());
-		boatData.applyToBoat(boat); // TODO fix flickering (use consumer)
+		Boat boat = l.getWorld().spawn(l, BoatComponent.CONVERTER.getBoatClass(boatData));
+		BoatComponent.CONVERTER.applyToBoat(boatData, boat); // TODO fix flickering (use consumer)
 		boat.addPassenger(p);
 		boat.setVelocity(p.getVelocity());
 		return boat;

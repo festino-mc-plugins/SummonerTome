@@ -14,12 +14,13 @@ import com.festp.handlers.TomeEntityHandler;
 import com.festp.utils.Utils;
 import com.festp.utils.UtilsVersion;
 
+@SuppressWarnings("deprecation")
 public class BoatDataConverter1_19 implements IBoatDataConverter
 {
 	private static class BoatMaterial {
-		Material boatMaterial;
-		Material chestBoatMaterial;
-		Boat.Type type;
+		final Material boatMaterial;
+		final Material chestBoatMaterial;
+		final Boat.Type type;
 		
 		public BoatMaterial(Material boat, Material chestBoat, Boat.Type type) {
 			this.boatMaterial = boat;
@@ -65,9 +66,9 @@ public class BoatDataConverter1_19 implements IBoatDataConverter
 
 	public void applyToBoat(BoatData data, Boat boat)
 	{
-		Class<? extends Boat> desiredClass = data.getBoatClass();
-		if (!desiredClass.isAssignableFrom(boat.getClass())
-				|| desiredClass == Boat.class && boat instanceof ChestBoat) { // dirty code
+		Class<? extends Boat> desiredClass = getBoatClass(data);
+		if (desiredClass == ChestBoat.class && !(boat instanceof ChestBoat)
+				|| desiredClass == Boat.class && boat instanceof ChestBoat) {
 			Location loc = boat.getLocation();
 			Boat newBoat = loc.getWorld().spawn(loc, desiredClass);
 			TomeEntityHandler.replaceEntity(boat, newBoat);
@@ -76,6 +77,10 @@ public class BoatDataConverter1_19 implements IBoatDataConverter
 		boat.setBoatType(materialToWood(data.boatMaterial));
 		if (data.hasChest)
 			((ChestBoat)boat).getInventory().setContents(data.inventory);
+	}
+	
+	public Class<? extends Boat> getBoatClass(BoatData data) {
+		return data.hasChest ? ChestBoat.class : Boat.class;
 	}
 	
 	public BoatData fromBoatMaterial(Material m) {

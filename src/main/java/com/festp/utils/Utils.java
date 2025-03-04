@@ -6,6 +6,8 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Particle;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -17,7 +19,11 @@ import com.festp.Logger;
 
 public class Utils
 {
-	private static final String BUKKIT_PACKAGE = "org.bukkit.craftbukkit.";
+	private static final String CRAFTBUKKIT_PACKAGE = "org.bukkit.craftbukkit.";
+	
+	private static Attribute MAX_HEALTH_ATTRIBUTE = initAttribute("MAX_HEALTH");
+	private static Attribute MOVEMENT_SPEED_ATTRIBUTE = initAttribute("MOVEMENT_SPEED");
+	private static Particle ENCHANT_PARTICLE = initParticle(new String[] { "ENCHANT", "ENCHANTMENT_TABLE" });
 	
 	public static void printError(String msg) {
 		Logger.severe(msg);
@@ -63,9 +69,9 @@ public class Utils
 	
 	/** format: "entity.CraftHorse" or "org.bukkit.craftbukkit.v1_18_R1.entity.CraftHorse" */
 	public static Class<?> getBukkitClass(String name) {
-		if (!name.startsWith(BUKKIT_PACKAGE)) {
+		if (!name.startsWith(CRAFTBUKKIT_PACKAGE)) {
 			String version = Bukkit.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3];
-		    name = BUKKIT_PACKAGE + version + "." + name;
+		    name = CRAFTBUKKIT_PACKAGE + version + "." + name;
 		}
 		
 		try {
@@ -76,10 +82,10 @@ public class Utils
 	}
 	public static String getShortBukkitClass(Class<?> clazz) {
 		String fullName = clazz.getName();
-		if (!fullName.startsWith(BUKKIT_PACKAGE)) {
+		if (!fullName.startsWith(CRAFTBUKKIT_PACKAGE)) {
 			return fullName;
 		}
-		String name = fullName.substring(BUKKIT_PACKAGE.length());
+		String name = fullName.substring(CRAFTBUKKIT_PACKAGE.length());
 		return name.substring(name.indexOf(".") + 1);
 	}
 	
@@ -115,5 +121,39 @@ public class Utils
 				return true;
 		}
 		return false;
+	}
+	
+	public static Attribute getMaxHealthAttribute() {
+		return MAX_HEALTH_ATTRIBUTE;
+	}
+	
+	public static Attribute getMovementSpeedAttribute() {
+		return MOVEMENT_SPEED_ATTRIBUTE;
+	}
+	
+	public static Particle getEnchantParticle() {
+		return ENCHANT_PARTICLE;
+	}
+	
+	private static Attribute initAttribute(String name) {
+		if (Attribute.class.getEnumConstants() == null) {
+			return Attribute.MAX_HEALTH;
+		}
+		// Attribute was an enum before 1.21
+		for (Attribute attribute : Attribute.class.getEnumConstants()) {
+			if (attribute.toString() == name)
+				return attribute;
+		}
+		return null;
+	}
+	
+	private static Particle initParticle(String[] names) {
+		for (Particle particle : Particle.class.getEnumConstants()) {
+			for (String name : names) {
+				if (particle.toString() == name)
+					return particle;
+			}
+		}
+		return null;
 	}
 }

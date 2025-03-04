@@ -10,6 +10,7 @@ public class UtilsVersion
 	public static final boolean SUPPORTS_MANGROVE_BOAT = isEqualOrGreater("1.19");
 	public static final boolean SUPPORTS_CHERRY_BOAT = isEqualOrGreater("1.20");
 	public static final boolean SUPPORTS_BAMBOO_RAFT = isEqualOrGreater("1.20");
+	public static final boolean SUPPORTS_PALE_OAK_BOAT = isEqualOrGreater("1.21.2");
 
 	private static int GetVersion()
 	{

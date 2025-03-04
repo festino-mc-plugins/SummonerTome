@@ -1,28 +1,20 @@
 package com.festp.components.boat;
 
 import org.bukkit.Material;
-import org.bukkit.entity.Boat;
-import org.bukkit.entity.ChestBoat;
 import org.bukkit.inventory.ItemStack;
 
 import com.festp.inventory.InventorySerializer;
 import com.festp.utils.UtilsVersion;
 
+/**
+ * Serializes, deserializes and stores boat data. Also applies data to boats.<br/>
+ * 
+ * serialized format: material char ('o' is for oak etc), chest char ('0'/'1'), inventory yaml (if has chest)<br/>
+ * examples: "b0", "j1slots: 27\n" 
+ */
 public class BoatData
 {
 	private static final char UNDEFINED_MATERIAL = '?';
-	private static final IBoatDataConverter CONVERTER = getConverter();
-	
-	private static IBoatDataConverter getConverter() {
-		if (UtilsVersion.SUPPORTS_CHEST_BOAT)
-			return new BoatDataConverter1_19();
-		else
-			return new BoatDataConverter1_18();
-	}
-	
-	public static Material[] getSupportedBoats() {
-		return CONVERTER.getSupportedBoats();
-	}
 	
 	Material boatMaterial = Material.OAK_BOAT;
 	boolean hasChest = false;
@@ -58,22 +50,6 @@ public class BoatData
 		return res;
 	}
 
-	public static BoatData fromBoat(Boat boat) {
-		return CONVERTER.fromBoat(boat);
-	}
-
-	public void applyToBoat(Boat boat) {
-		CONVERTER.applyToBoat(this, boat);
-	}
-
-	public static BoatData fromBoatMaterial(Material m) {
-		return CONVERTER.fromBoatMaterial(m);
-	}
-	
-	public Class<? extends Boat> getBoatClass() {
-		return hasChest ? ChestBoat.class : Boat.class;
-	}
-
 	private static char materialToChar(Material material) {
 		if (material == Material.ACACIA_BOAT)
 			return 'a';
@@ -98,6 +74,10 @@ public class BoatData
 		if (UtilsVersion.SUPPORTS_BAMBOO_RAFT) {
 			if (material == Material.BAMBOO_RAFT)
 				return 'r';
+		}
+		if (UtilsVersion.SUPPORTS_PALE_OAK_BOAT) {
+			if (material == Material.PALE_OAK_BOAT)
+				return 'p';
 		}
 		return UNDEFINED_MATERIAL;
 	}
@@ -126,6 +106,10 @@ public class BoatData
 		if (UtilsVersion.SUPPORTS_BAMBOO_RAFT) {
 			if (c == 'r')
 				return Material.BAMBOO_RAFT;
+		}
+		if (UtilsVersion.SUPPORTS_PALE_OAK_BOAT) {
+			if (c == 'p')
+				return Material.PALE_OAK_BOAT;
 		}
 		return null;
 	}
