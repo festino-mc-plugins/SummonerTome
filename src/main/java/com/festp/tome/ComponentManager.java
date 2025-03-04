@@ -3,9 +3,9 @@ package com.festp.tome;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.festp.components.CustomHorseComponent;
-import com.festp.components.HorseComponent;
 import com.festp.components.ITomeComponent;
+import com.festp.components.horse.CustomHorseComponent;
+import com.festp.components.horse.HorseComponent;
 import com.festp.config.Config;
 import com.festp.config.IConfig;
 import com.festp.handlers.IDataExtractor;

@@ -1,9 +1,10 @@
-package com.festp.components;
+package com.festp.components.horse;
 
 import org.bukkit.entity.AbstractHorse;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
 
+import com.festp.components.ITomeComponent;
 import com.festp.handlers.IDataExtractor;
 import com.festp.tome.SummonerTome;
 

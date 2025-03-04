@@ -1,10 +1,11 @@
-package com.festp.components;
+package com.festp.components.strider;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
+import com.festp.components.ITomeComponent;
 import com.festp.utils.SummonUtils;
 import com.festp.utils.Utils;
 

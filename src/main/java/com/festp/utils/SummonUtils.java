@@ -18,8 +18,9 @@ import org.bukkit.entity.Pig;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Strider;
 import org.bukkit.inventory.ItemStack;
-import com.festp.components.BoatData;
-import com.festp.components.HorseData;
+
+import com.festp.components.boat.BoatData;
+import com.festp.components.horse.HorseData;
 
 public class SummonUtils
 {

@@ -1,4 +1,4 @@
-package com.festp.components;
+package com.festp.components.boat;
 
 import java.util.ArrayList;
 import java.util.Arrays;

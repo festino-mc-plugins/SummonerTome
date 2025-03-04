@@ -1,4 +1,4 @@
-package com.festp.components;
+package com.festp.components.horse;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;

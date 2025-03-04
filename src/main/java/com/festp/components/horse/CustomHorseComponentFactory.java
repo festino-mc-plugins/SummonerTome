@@ -1,5 +1,6 @@
-package com.festp.components;
+package com.festp.components.horse;
 
+import com.festp.components.ITomeComponent;
 import com.festp.tome.IComponentFactory;
 
 public class CustomHorseComponentFactory implements IComponentFactory

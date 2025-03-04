@@ -1,9 +1,11 @@
-package com.festp.components;
+package com.festp.components.boat;
 
 import org.bukkit.Location;
 import org.bukkit.entity.Boat;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+
+import com.festp.components.ITomeComponent;
 import com.festp.utils.SummonUtils;
 
 public class BoatComponent implements ITomeComponent

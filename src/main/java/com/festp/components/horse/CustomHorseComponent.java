@@ -1,10 +1,11 @@
-package com.festp.components;
+package com.festp.components.horse;
 
 import org.bukkit.Location;
 import org.bukkit.entity.AbstractHorse;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
+import com.festp.components.ITomeComponent;
 import com.festp.utils.SummonUtils;
 
 public class CustomHorseComponent implements ITomeComponent

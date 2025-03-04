@@ -1,9 +1,10 @@
-package com.festp.components;
+package com.festp.components.boat;
 
 import org.bukkit.entity.Boat;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
 
+import com.festp.components.ITomeComponent;
 import com.festp.handlers.IDataExtractor;
 
 public class BoatDataExtractor implements IDataExtractor

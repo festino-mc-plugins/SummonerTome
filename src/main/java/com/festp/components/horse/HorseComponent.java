@@ -1,26 +1,25 @@
-package com.festp.components;
+package com.festp.components.horse;
 
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
+import com.festp.components.ITomeComponent;
 import com.festp.utils.SummonUtils;
-import com.festp.utils.Utils;
 
-public class PigComponent implements ITomeComponent
+public class HorseComponent implements ITomeComponent
 {
-	private static final double SEARCHING_RADIUS = 2.5;
-	public static final String CODE = "pig";
+	private static final double SEARCHING_RADIUS = 1.5;
+	public static final String CODE = "horse";
 	
 	public String getCode() {
 		return CODE;
 	}
 	
 	public int getPriority() {
-		return 8;
+		return 2;
 	}
-	
+
 	public String serialize() {
 		return "";
 	}
@@ -32,14 +31,14 @@ public class PigComponent implements ITomeComponent
 	}
 
 	public boolean canSummon(Player player) {
-		return Utils.checkHotbar(player, Material.CARROT_ON_A_STICK);
+		return true;
 	}
 	
 	public Location getSummonLocation(Location playerLoc) {
-		return SummonUtils.tryFindForPig(playerLoc, SEARCHING_RADIUS);
+		return SummonUtils.tryFindForHorse(playerLoc, SEARCHING_RADIUS);
 	}
 
 	public Entity summon(Player summoner, Location loc) {
-		return SummonUtils.summonPig(loc, summoner);
+		return SummonUtils.summonHorse(loc, summoner);
 	}
 }

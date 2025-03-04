@@ -1,24 +1,25 @@
-package com.festp.components;
+package com.festp.components.minecart;
 
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
+import com.festp.components.ITomeComponent;
 import com.festp.utils.SummonUtils;
 
-public class HorseComponent implements ITomeComponent
+public class MinecartComponent implements ITomeComponent
 {
-	private static final double SEARCHING_RADIUS = 1.5;
-	public static final String CODE = "horse";
+	private static final double RAIL_SEARCHING_RADIUS = 1.5;
+	public static final String CODE = "minecart";
 	
 	public String getCode() {
 		return CODE;
 	}
 	
 	public int getPriority() {
-		return 2;
+		return 10;
 	}
-
+	
 	public String serialize() {
 		return "";
 	}
@@ -34,10 +35,13 @@ public class HorseComponent implements ITomeComponent
 	}
 	
 	public Location getSummonLocation(Location playerLoc) {
-		return SummonUtils.tryFindForHorse(playerLoc, SEARCHING_RADIUS);
+		Location res = SummonUtils.tryFindForMinecart(playerLoc, RAIL_SEARCHING_RADIUS);
+		if (res == null)
+			return null;
+		return res.add(0.0, 0.01, 0.0); // workaround for rails on ice
 	}
 
 	public Entity summon(Player summoner, Location loc) {
-		return SummonUtils.summonHorse(loc, summoner);
+		return SummonUtils.summonMinecart(loc, summoner);
 	}
 }

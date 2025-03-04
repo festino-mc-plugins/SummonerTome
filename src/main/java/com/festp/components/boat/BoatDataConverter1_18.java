@@ -1,4 +1,4 @@
-package com.festp.components;
+package com.festp.components.boat;
 
 import org.bukkit.Material;
 import org.bukkit.TreeSpecies;
